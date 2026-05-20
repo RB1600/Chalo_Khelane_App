@@ -24,7 +24,30 @@ import {
 SplashScreen.preventAutoHideAsync();
 
 WebBrowser.maybeCompleteAuthSession();
-import { StatusBar, BackHandler, Platform, ToastAndroid } from "react-native";
+import { StatusBar, BackHandler, Platform, ToastAndroid, Text, TextInput } from "react-native";
+
+// Force Montserrat Medium on every Text/TextInput in the app.
+// Wrapping `render` (instead of using `defaultProps.style`) ensures this font
+// wins over any explicit fontFamily set inline by individual screens.
+const FORCED_FONT_STYLE = { fontFamily: "Montserrat_500Medium", fontWeight: "500" };
+
+const _origTextRender = Text.render;
+Text.render = function patchedTextRender(...args) {
+  const origin = _origTextRender.call(this, ...args);
+  return React.cloneElement(origin, {
+    style: [origin.props.style, FORCED_FONT_STYLE],
+  });
+};
+
+const _origTextInputRender = TextInput.render;
+if (_origTextInputRender) {
+  TextInput.render = function patchedTextInputRender(...args) {
+    const origin = _origTextInputRender.call(this, ...args);
+    return React.cloneElement(origin, {
+      style: [origin.props.style, FORCED_FONT_STYLE],
+    });
+  };
+}
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { AuthProvider } from "./src/context/AuthContext";
