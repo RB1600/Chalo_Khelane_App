@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Firebase / Google service accounts
+**/firebase-admin*.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Signing / certificates
+*.pem
+*.jks
+*.p8
+*.p12
+*.key
+*.keystore
+*.mobileprovision
+**/credentials.json
+**/credentials/
+
+# Expo / EAS
+.expo/
+**/.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# Build artifacts
+build/
+out/
+
+# Server uploads (user-generated content)
+server/uploads/
+
+# Local debug / scratch files
+debug-output.txt
+tournament-details.txt
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript
+*.tsbuildinfo

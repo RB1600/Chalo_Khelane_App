@@ -1,0 +1,2592 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  Modal,
+} from 'react-native';
+import { MaterialIcons, FontAwesome5, Feather, Ionicons } from '@expo/vector-icons';
+import API from '../../api/tournaments';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+
+/**
+ * Detects whether the match format uses nested games (Tennis) or flat sets (TT, Badminton).
+ * Mirror of server/factories/MatchFactory.js → hasNestedGames.
+ * Flat-set sports (TT, Badminton) render each set as one "Game" row — no set tabs.
+ * Nested sports (Tennis) render set tabs with multi-game grid per set.
+ */
+function hasNestedGames(fmt) {
+  if (!fmt || typeof fmt !== 'object') return false;
+  if (fmt.gamesPerSet != null && Number(fmt.gamesPerSet) > 0) return true;
+  const tg = Number(fmt.totalGames);
+  const ts = Number(fmt.totalSets);
+  if (Number.isFinite(tg) && Number.isFinite(ts) && tg > 1 && tg !== ts) return true;
+  return false;
+}
+
+const TournamentLeaderboardDetail = ({ route, navigation }) => {
+  const { tournament, tournamentId, tournamentName, tournamentType } = route.params;
+  const { user } = useAuth();
+  const userId = user?.id || user?._id;
+
+  // STATE MANAGEMENT
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [tournamentStats, setTournamentStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  // NEW STATE FOR REDESIGN
+  const isGroupStage = tournamentType?.toLowerCase().includes('group stage');
+  const [viewMode, setViewMode] = useState('LEADERBOARD');
+  const [groups, setGroups] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [groupStandings, setGroupStandings] = useState([]);
+  const [loadingExtra, setLoadingExtra] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('rank');
+  const [filterType, setFilterType] = useState('all');
+  const [knockoutMatches, setKnockoutMatches] = useState([]);
+  const [highlightedPlayerId, setHighlightedPlayerId] = useState(null);
+  const [highlightedPathIds, setHighlightedPathIds] = useState(new Set());
+  const [topPlayersByGroup, setTopPlayersByGroup] = useState({}); // { groupId: [players] }
+  const [groupCategoryFilter, setGroupCategoryFilter] = useState('all');
+  const [groupCompletion, setGroupCompletion] = useState({}); // { groupId: { total, completed, allDone } }
+  const [knockoutCategoryFilter, setKnockoutCategoryFilter] = useState('all');
+  const [showResultsModal, setShowResultsModal] = useState(false);
+
+  // Match details modal state
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [activeSetIndex, setActiveSetIndex] = useState(0);
+
+  // Phase 4e: umpire authorization summary for this tournament (null = not yet fetched)
+  const [umpireAuth, setUmpireAuth] = useState(null);
+
+  // Reset active set when a new match opens
+  useEffect(() => {
+    if (selectedMatch) setActiveSetIndex(0);
+  }, [selectedMatch]);
+
+  // Phase 4e: fetch the caller's umpire authorization summary.
+  // Non-umpires fall through to hasAnyGrant=false; the helpers below gate UI accordingly.
+  useEffect(() => {
+    if (!userId || !tournamentId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get(
+          `${API.BASE_URL}/referee/my-authorizations/${userId}/${tournamentId}`
+        );
+        if (!cancelled) setUmpireAuth(res.data);
+      } catch (err) {
+        // 4xx or network issue → treat as no grants (user just won't get tap-to-score).
+        if (!cancelled) setUmpireAuth({ hasAnyGrant: false, stages: [], matchIds: [] });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [userId, tournamentId]);
+
+  // Phase 4e: stage derivation (matches server/utils/umpireAuth.js → getMatchStage)
+  const getMatchStage = (match) => (match?.groupId ? 'group-stage' : 'knockout');
+
+  // Phase 4e: whether the current user can score this match.
+  // True if user has a match-level grant OR a stage-level grant covering this match's stage.
+  const isAuthorizedForMatch = (match) => {
+    if (!umpireAuth || !umpireAuth.hasAnyGrant) return false;
+    const matchIdStr = match?._id?.toString?.() || match?._id;
+    if (Array.isArray(umpireAuth.matchIds) && matchIdStr && umpireAuth.matchIds.includes(matchIdStr)) {
+      return true;
+    }
+    const stage = getMatchStage(match);
+    return Array.isArray(umpireAuth.stages) && umpireAuth.stages.includes(stage);
+  };
+
+  // No changes needed to columns, keeping them for the leaderboard view mode
+
+  // DATA FETCHING
+  useEffect(() => {
+    if (isGroupStage) {
+      fetchGroups();
+      fetchKnockoutMatches();
+      fetchAllGroupTopPlayers();
+    }
+    fetchLeaderboardData();
+  }, [tournamentType, tournamentId]);
+
+  const fetchGroups = async () => {
+    try {
+      setLoading(true);
+      const endpoint = `${API.ENDPOINTS.BOOKING_GROUPS.BY_TOURNAMENT(tournamentId)}?mobile=true`;
+      const response = await axios.get(endpoint);
+      const data = response.data;
+      const groups = data.groups || data.data || (Array.isArray(data) ? data : []);
+      setGroups(groups);
+      // Chain: compute per-group match completion map once groups are known
+      fetchGroupCompletion(groups);
+    } catch (err) {
+      console.error('Error fetching groups:', err);
+    } finally {
+      if (!isGroupStage) setLoading(false);
+    }
+  };
+
+  // Fetch top players for ALL groups in one request — used for group cards preview
+  const fetchAllGroupTopPlayers = async () => {
+    try {
+      const resp = await axios.get(API.ENDPOINTS.TOP_PLAYERS.BY_TOURNAMENT(tournamentId));
+      // Response: { success: true, topPlayers: [{ playerName, points, groupId, ... }] }
+      const flatPlayers = resp.data?.topPlayers || [];
+      const map = {};
+      flatPlayers.forEach(player => {
+        const gid = player.groupId?.toString?.() || player.groupId;
+        if (!gid) return;
+        if (!map[gid]) map[gid] = [];
+        map[gid].push(player);
+      });
+      // Sort each group's players by points (descending)
+      Object.keys(map).forEach(gid => {
+        map[gid].sort((a, b) => (b.points || 0) - (a.points || 0));
+      });
+      setTopPlayersByGroup(map);
+    } catch (err) {
+      // Silent — top players may not be generated yet
+    }
+  };
+
+  // Compute per-group match completion map (used to green-tint finished group cards).
+  // No server endpoint returns all group-stage matches at once, so we fan out per group.
+  const fetchGroupCompletion = async (groupList) => {
+    try {
+      const list = Array.isArray(groupList) ? groupList : [];
+      if (list.length === 0) return;
+      const results = await Promise.all(
+        list.map(async (g) => {
+          const gid = g?._id;
+          if (!gid) return null;
+          try {
+            const resp = await axios.get(
+              `${API.ENDPOINTS.MATCHES.BY_GROUP(tournamentId, gid)}?mobile=true`
+            );
+            const data = resp.data;
+            const matches = data?.matches || data?.data || (Array.isArray(data) ? data : []);
+            const total = matches.length;
+            const completed = matches.filter(
+              (m) => String(m?.status || '').toUpperCase() === 'COMPLETED'
+            ).length;
+            return [gid.toString(), { total, completed, allDone: total > 0 && completed === total }];
+          } catch {
+            return null;
+          }
+        })
+      );
+      const map = {};
+      results.forEach((entry) => {
+        if (entry) map[entry[0]] = entry[1];
+      });
+      setGroupCompletion(map);
+    } catch (err) {
+      // Silent — completion tint is a progressive enhancement
+    }
+  };
+
+  const fetchGroupData = async (groupId) => {
+    try {
+      setLoadingExtra(true);
+      // Fetch Matches
+      const matchesResp = await axios.get(`${API.ENDPOINTS.MATCHES.BY_GROUP(tournamentId, groupId)}?mobile=true`);
+      const matchesData = matchesResp.data;
+
+      if (matchesData.success) {
+        setMatches(matchesData.matches || matchesData.data || []);
+      }
+
+      // Fetch Standings - Using BY_TOURNAMENT endpoint as preferred and filtering client-side
+      try {
+        const standingsResp = await axios.get(API.ENDPOINTS.TOP_PLAYERS.BY_TOURNAMENT(tournamentId));
+        const standingsData = standingsResp.data;
+
+        if (standingsData.success) {
+          const allTopPlayers = standingsData.data || [];
+          // Find the top players document for this specific group
+          const groupData = allTopPlayers.find(item => item.groupId === groupId);
+          setGroupStandings(groupData?.topPlayers || []);
+        }
+      } catch (sErr) {
+        console.warn('Standings endpoint returned error or not found:', sErr.message);
+        setGroupStandings([]);
+      }
+
+      setViewMode('MATCHES');
+    } catch (err) {
+      console.error('Error fetching group data:', err);
+    } finally {
+      setLoadingExtra(false);
+    }
+  };
+
+  // Fetch knockout matches - SuperMatch objects support live-state integration
+  const fetchKnockoutMatches = async () => {
+    try {
+      // Fetch both SuperMatch knockout matches AND Direct Knockout matches
+      const [superMatchResponse, directKnockoutResponse] = await Promise.all([
+        // SuperMatch knockout matches (traditional flow)
+        axios.get(API.ENDPOINTS.GROUP_STAGE.KNOCKOUT_MATCHES(tournamentId))
+          .catch(err => ({ data: { success: false, matches: [] } })),
+
+        // Direct Knockout matches (new beast system!)
+        axios.get(API.ENDPOINTS.PROGRESSION.DIRECT_KNOCKOUT_MATCHES(tournamentId))
+          .catch(err => ({ data: { success: false, matches: [] } }))
+      ]);
+
+      let allMatches = [];
+
+      // Process SuperMatch knockout matches
+      if (superMatchResponse.data.success && superMatchResponse.data.matches?.length > 0) {
+        // Enriched mapping for SuperMatches
+        const enrichedSuperMatches = superMatchResponse.data.matches.map((match) => {
+          let normalizedStatus = match.status;
+
+          // If completed, ensure correct status and winner
+          if (match.status === 'completed' && match.winner?.playerName) {
+            normalizedStatus = 'completed';
+          } else {
+            normalizedStatus = match.status || 'scheduled';
+          }
+
+          return {
+            ...match,
+            type: 'super-knockout',
+            status: normalizedStatus,
+            hasScores: !!match.winner?.playerName || !!match.score?.setScores,
+            winnerName: match.winner?.playerName,
+          };
+        });
+        allMatches = [...allMatches, ...enrichedSuperMatches];
+      }
+
+      // Process Direct Knockout matches
+      if (directKnockoutResponse.data.success && directKnockoutResponse.data.matches?.length > 0) {
+        const enrichedDirectMatches = directKnockoutResponse.data.matches.map(match => {
+          let normalizedStatus = (match.status || 'scheduled').toLowerCase();
+          if (normalizedStatus === 'in_progress') normalizedStatus = 'in-progress';
+
+          return {
+            ...match,
+            _id: match._id || match.matchId,
+            status: normalizedStatus,
+            hasScores: normalizedStatus === 'completed' || !!match.result?.winner?.playerId,
+            type: 'direct-knockout',
+            round: match.round,
+            roundNumber: match.roundNumber,
+            courtNumber: match.courtNumber, // Map courtNumber
+            score: { // Map scores for unified rendering
+              player1Sets: match.result?.finalScore?.player1Sets ?? match.result?.player1Sets ?? 0,
+              player2Sets: match.result?.finalScore?.player2Sets ?? match.result?.player2Sets ?? 0
+            },
+            player1: match.player1,
+            player2: match.player2,
+            winnerName: match.result?.winner?.playerName || match.winner,
+          };
+        });
+        allMatches = [...allMatches, ...enrichedDirectMatches];
+      }
+
+      // Sort all matches: first by roundNumber (ascending), then by matchNumber
+      // Assuming 'pre-quarter' = 1, 'quarter-final' = 2, 'semi-final' = 3, 'final' = 4 if roundNumber exists
+      // If roundNumber is missing, we might need a map or just rely on creation order
+      allMatches.sort((a, b) => {
+        if (a.roundNumber !== b.roundNumber) {
+          return (a.roundNumber || 0) - (b.roundNumber || 0);
+        }
+        return (a.matchNumber || 0) - (b.matchNumber || 0);
+      });
+
+      setKnockoutMatches(allMatches);
+
+    } catch (err) {
+      console.error('Error fetching knockout matches:', err);
+      setKnockoutMatches([]);
+    }
+  };
+
+  const fetchLeaderboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let endpoint;
+      const type = tournamentType?.toLowerCase();
+
+      if (type?.includes('group stage')) {
+        endpoint = API.ENDPOINTS.LEADERBOARD.GROUP_STAGE_PLAYERS(tournamentId);
+      } else if (type?.includes('knockout')) {
+        endpoint = API.ENDPOINTS.LEADERBOARD.KNOCKOUT_TEAMS(tournamentId);
+      } else {
+        throw new Error('Invalid tournament type');
+      }
+      const response = await axios.get(endpoint);
+      const data = response.data;
+
+      if (data.success) {
+        setLeaderboardData(data.leaderboard || data.data?.players || data.data?.teams || []);
+        if (data.stats || data.data?.statistics) {
+          setTournamentStats(data.stats || data.data?.statistics);
+        }
+      } else {
+        setLeaderboardData([]);
+        setTournamentStats(null);
+        setError(data.message || 'Failed to load leaderboard data');
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      setLeaderboardData([]);
+      setTournamentStats(null);
+      setError(error.message || 'Network request failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // REFRESH HANDLER
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    const mainFetch = fetchLeaderboardData();
+    const groupFetch = isGroupStage ? fetchGroups() : Promise.resolve();
+    const knockoutFetch = isGroupStage ? fetchKnockoutMatches() : Promise.resolve();
+    const topPlayersFetch = isGroupStage ? fetchAllGroupTopPlayers() : Promise.resolve();
+    Promise.all([mainFetch, groupFetch, knockoutFetch, topPlayersFetch]).finally(() => setRefreshing(false));
+  }, [isGroupStage]);
+
+  // FILTERING AND SORTING
+  const filteredAndSortedData = useMemo(() => {
+
+    let filtered = [...leaderboardData];
+
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item => {
+        if (tournamentType?.toLowerCase().includes('group stage')) {
+          return item.playerName?.toLowerCase().includes(query);
+        } else {
+          return item.teamName?.toLowerCase().includes(query) ||
+            item.captain?.toLowerCase().includes(query);
+        }
+      });
+    }
+
+    // Apply type filter
+    if (filterType !== 'all') {
+      filtered = filtered.filter(item => {
+        if (filterType === 'active') {
+          return item.status === 'Active' || item.status === 'ACTIVE' || !item.isEliminated;
+        } else if (filterType === 'eliminated') {
+          return item.status === 'Eliminated' || item.status === 'ELIMINATED' || item.isEliminated;
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rank':
+          return (a.rank || 0) - (b.rank || 0);
+        case 'points':
+          return (b.performanceScore || b.totalPoints || 0) - (a.performanceScore || a.totalPoints || 0);
+        case 'winRate':
+          return (b.totalWinRate || b.winRate || 0) - (a.totalWinRate || a.winRate || 0);
+        case 'name':
+          const nameA = a.playerName || a.teamName || '';
+          const nameB = b.playerName || b.teamName || '';
+          return nameA.localeCompare(nameB);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [leaderboardData, searchQuery, filterType, sortBy, tournamentType]);
+
+  // UTILITY FUNCTIONS
+  const getStageColor = (stage) => {
+    const stageMap = {
+      'registered': '#9E9E9E',       // Gray
+      'group stage': '#2196F3',      // Blue
+      'league': '#2196F3',           // Blue
+      'round 1': '#2196F3',          // Blue
+      'top players': '#FF9800',      // Orange
+      'round 2': '#FF9800',          // Orange
+      'super players': '#9C27B0',    // Purple (Elite status)
+      'knockout phase': '#E91E63',   // Pink
+      'knockout': '#E91E63',         // Pink
+      'final knockout': '#E91E63',   // Pink
+      'champion': '#FFD700',         // Gold
+    };
+    return stageMap[stage?.toLowerCase()] || '#757575';
+  };
+
+  const getStatusColor = (item) => {
+    if (item.isChampion || item.championships > 0) return '#FFD700';
+    if (item.isEliminated || item.status === 'ELIMINATED') return '#F44336';
+    if (item.status === 'ACTIVE' || !item.isEliminated) return '#4CAF50';
+    return '#2196F3';
+  };
+
+  const getStatusText = (item) => {
+    if (item.isChampion || item.championships > 0) return 'CHAMPION';
+    if (item.isEliminated || item.status === 'ELIMINATED') return 'ELIMINATED';
+    if (item.status === 'ACTIVE') return 'ACTIVE';
+    return item.status || 'ACTIVE';
+  };
+
+  const formatCategory = (category) => {
+    if (!category) return '';
+    return category
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const renderGroups = () => {
+    // Derive unique categories from groups
+    const categories = Array.from(
+      new Set(groups.map(g => g.category).filter(Boolean))
+    );
+
+    // Apply category filter
+    const filteredGroups = groupCategoryFilter === 'all'
+      ? groups
+      : groups.filter(g => g.category === groupCategoryFilter);
+
+    return (
+    <View style={styles.tabContent}>
+      {/* Category Filter */}
+      {categories.length > 1 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryFilterRow}
+          style={{ marginBottom: 14 }}
+        >
+          <TouchableOpacity
+            onPress={() => setGroupCategoryFilter('all')}
+            style={[
+              styles.categoryChip,
+              groupCategoryFilter === 'all' && styles.categoryChipActive,
+            ]}
+            activeOpacity={0.8}
+          >
+            <Text style={[
+              styles.categoryChipText,
+              groupCategoryFilter === 'all' && styles.categoryChipTextActive,
+            ]}>
+              All ({groups.length})
+            </Text>
+          </TouchableOpacity>
+          {categories.map((cat) => {
+            const count = groups.filter(g => g.category === cat).length;
+            const isActive = groupCategoryFilter === cat;
+            return (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => setGroupCategoryFilter(cat)}
+                style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                activeOpacity={0.8}
+              >
+                <Text style={[
+                  styles.categoryChipText,
+                  isActive && styles.categoryChipTextActive,
+                ]}>
+                  {formatCategory(cat)} ({count})
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {filteredGroups.length > 0 ? (
+        <View style={styles.groupGrid}>
+          {filteredGroups.map((group, index) => {
+            const groupTopPlayers = (topPlayersByGroup[group._id] || []).slice(0, 3);
+            const completion = groupCompletion[group._id?.toString?.() || group._id];
+            const allDone = !!completion?.allDone;
+            return (
+              <TouchableOpacity
+                key={group._id || index}
+                style={styles.groupCard}
+                onPress={() => {
+                  setSelectedGroup(group);
+                  fetchGroupData(group._id);
+                }}
+              >
+                <LinearGradient
+                  colors={allDone ? ['#10B981', '#059669'] : ['#F4CE74', '#FF7426']}
+                  style={styles.groupCardHeader}
+                >
+                  <Text style={styles.groupCardTitle}>{group.name || group.groupName || `Group ${index + 1}`}</Text>
+                  <Ionicons name={allDone ? 'checkmark-circle' : 'people'} size={20} color="white" />
+                </LinearGradient>
+                <View style={styles.groupCardBody}>
+                  <View style={styles.groupStatRow}>
+                    <Text style={styles.groupStatLabel}>Players:</Text>
+                    <Text style={styles.groupStatValue}>{group.players?.length || group.teams?.length || 0}</Text>
+                  </View>
+                  {group.category && (
+                    <View style={styles.groupStatRow}>
+                      <Text style={styles.groupStatLabel}>Category:</Text>
+                      <Text style={[styles.groupStatValue, { color: '#FF6A00' }]}>{formatCategory(group.category)}</Text>
+                    </View>
+                  )}
+
+                  {/* Top Players Preview */}
+                  {groupTopPlayers.length > 0 && (
+                    <View style={styles.groupTopPlayersBox}>
+                      <View style={styles.groupTopPlayersHeader}>
+                        <Ionicons name="trophy" size={11} color="#FF6A00" />
+                        <Text style={styles.groupTopPlayersTitle}>Top Players</Text>
+                      </View>
+                      {groupTopPlayers.map((player, pIdx) => {
+                        const medal = pIdx === 0 ? '#FFD700' : pIdx === 1 ? '#C0C0C0' : '#CD7F32';
+                        return (
+                          <View key={pIdx} style={styles.groupTopPlayerRow}>
+                            <View style={[styles.groupTopPlayerRank, { backgroundColor: medal }]}>
+                              <Text style={styles.groupTopPlayerRankText}>{pIdx + 1}</Text>
+                            </View>
+                            <Text style={styles.groupTopPlayerName} numberOfLines={1}>
+                              {player.playerName || player.userName || player.name || 'Unknown'}
+                            </Text>
+                            <Text style={styles.groupTopPlayerPts}>{player.points ?? player.totalPoints ?? 0}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+                <View style={styles.groupCardFooter}>
+                  <Text style={styles.viewMatchesText}>View Matches</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#FF6A00" />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ) : (
+        <View style={styles.noDataBox}>
+          <Ionicons name="layers-outline" size={48} color="#ddd" />
+          <Text style={styles.noDataText}>
+            {groupCategoryFilter === 'all' ? 'No groups created yet' : 'No groups in this category'}
+          </Text>
+        </View>
+      )}
+    </View>
+    );
+  };
+
+  const renderMatches = () => (
+    <View style={styles.tabContent}>
+      <TouchableOpacity
+        style={styles.backToGroups}
+        onPress={() => setViewMode('GROUPS')}
+      >
+        <Ionicons name="arrow-back" size={20} color="#FF6A00" />
+        <Text style={styles.backToGroupsText}>Back to Groups</Text>
+      </TouchableOpacity>
+
+      <View style={styles.matchGroupHeader}>
+        <Text style={styles.matchGroupTitle}>{selectedGroup?.name || selectedGroup?.groupName}</Text>
+      </View>
+
+      {/* Group Standings Section */}
+      {groupStandings.length > 0 && (
+        <View style={styles.standingsContainer}>
+          <View style={styles.standingsHeader}>
+            <Ionicons name="podium" size={18} color="#FF6A00" />
+            <Text style={styles.standingsTitle}>Top Player's</Text>
+          </View>
+          <View style={styles.standingsList}>
+            <View style={styles.standingsLabelRow}>
+              <Text style={[styles.standingLabel, { flex: 0.5 }]}>Pos</Text>
+              <Text style={[styles.standingLabel, { flex: 2 }]}>Player</Text>
+              <Text style={[styles.standingLabel, { flex: 1, textAlign: 'center' }]}>Pld</Text>
+              <Text style={[styles.standingLabel, { flex: 1, textAlign: 'center' }]}>Pts</Text>
+            </View>
+            {groupStandings.map((player, pIdx) => (
+              <View key={pIdx} style={[styles.standingRow, pIdx < 2 && styles.qualifierRow]}>
+                <View style={[styles.posBadge, pIdx === 0 && styles.firstPos, pIdx === 1 && styles.secondPos]}>
+                  <Text style={styles.posText}>{pIdx + 1}</Text>
+                </View>
+                <Text style={styles.standingPlayerName} numberOfLines={1}>
+                  {player.name || player.playerName || 'Unknown'}
+                </Text>
+                <Text style={styles.standingPld}>{player.matchesPlayed || 0}</Text>
+                <Text style={styles.standingPts}>{player.totalPoints || 0}</Text>
+                {pIdx < 2 && (
+                  <View style={styles.qualifierTag}>
+                    <Ionicons name="checkmark-circle" size={12} color="#4CAF50" />
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      <View style={styles.matchGroupHeader}>
+        <Text style={styles.matchSubTitle}>Matches Schedule</Text>
+      </View>
+
+      {loadingExtra ? (
+        <ActivityIndicator size="small" color="#FF6A00" style={{ marginTop: 20 }} />
+      ) : matches.length > 0 ? (
+        matches.map((match, index) => {
+          // Phase 4e: umpire tap-to-score gating
+          const canScore = isAuthorizedForMatch(match);
+          const isCompleted = match.status === 'COMPLETED' || match.status === 'completed';
+          const canOpenScorer = canScore && !isCompleted;
+          const CardWrap = canOpenScorer ? TouchableOpacity : View;
+          const matchLabel = match.matchNumber
+            ? `M${match.matchNumber} • ${(match.player1?.userName || match.player1?.playerName || 'P1')} vs ${(match.player2?.userName || match.player2?.playerName || 'P2')}`
+            : (tournamentName || 'Match');
+          return (
+            <CardWrap
+              key={match._id || index}
+              style={styles.matchCard}
+              {...(canOpenScorer ? {
+                activeOpacity: 0.85,
+                onPress: () => navigation.navigate('RefereeMatchScorer', {
+                  matchId: match._id,
+                  matchLabel,
+                }),
+              } : {})}
+            >
+              <View style={styles.matchMeta}>
+                <Text style={styles.matchDate}>
+                  {match.startTime || match.scheduledTime ? new Date(match.startTime || match.scheduledTime).toLocaleDateString() : 'TBD'}
+                </Text>
+                <View style={[styles.matchStatusBadge, { backgroundColor: match.status === 'COMPLETED' ? '#E8F5E9' : '#FFF3E0' }]}>
+                  <Text style={[styles.matchStatusText, { color: match.status === 'COMPLETED' ? '#2E7D32' : '#FF8F00' }]}>
+                    {match.status || 'SCHEDULED'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.matchTeams}>
+                <View style={styles.matchTeam}>
+                  <Text style={styles.matchTeamName}>{match.player1?.userName || match.player1?.playerName || match.team1?.name || 'TBD'}</Text>
+                  <Text style={styles.matchScore}>
+                    {(() => { const r = require('../../utils/matchResultUtils').readMatchResult(match); return r?.player1Score ?? 0; })()}
+                  </Text>
+                </View>
+                <View style={styles.matchVs}>
+                  <Text style={styles.vsText}>{match.courtNumber ? `COURT ${match.courtNumber}` : 'VS'}</Text>
+                </View>
+                <View style={styles.matchTeam}>
+                  <Text style={styles.matchScore}>
+                    {(() => { const r = require('../../utils/matchResultUtils').readMatchResult(match); return r?.player2Score ?? 0; })()}
+                  </Text>
+                  <Text style={styles.matchTeamName}>{match.player2?.userName || match.player2?.playerName || match.team2?.name || 'TBD'}</Text>
+                </View>
+              </View>
+              {canOpenScorer && (
+                <View style={styles.tapScoreHint}>
+                  <MaterialIcons name="edit" size={12} color="#FF6A00" />
+                  <Text style={styles.tapScoreHintText}>Tap to score</Text>
+                </View>
+              )}
+            </CardWrap>
+          );
+        })
+      ) : (
+        <View style={styles.noDataBox}>
+          <Ionicons name="calendar-outline" size={48} color="#ddd" />
+          <Text style={styles.noDataText}>No matches found for this group</Text>
+        </View>
+      )}
+    </View>
+  );
+
+  const renderLeaderboardMode = () => (
+    <View style={styles.tabContent}>
+      <View style={styles.premiumTable}>
+        <View style={styles.premiumTableHeader}>
+          <Text style={[styles.pHeaderCell, { flex: 0.5 }]}>#</Text>
+          <Text style={[styles.pHeaderCell, { flex: 2, textAlign: 'left' }]}>NAME</Text>
+          <Text style={[styles.pHeaderCell, { flex: 1 }]}>W/L</Text>
+          <Text style={[styles.pHeaderCell, { flex: 1 }]}>PTS</Text>
+        </View>
+        {leaderboardData.map((item, index) => (
+          <View key={index} style={[styles.premiumTableRow, index < 3 && styles.topThreeRow]}>
+            <View style={[styles.pCell, { flex: 0.5 }]}>
+              {index < 3 ? (
+                <MaterialIcons name="emoji-events" size={18} color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'} />
+              ) : (
+                <Text style={styles.rankText}>#{index + 1}</Text>
+              )}
+            </View>
+            <Text style={[styles.pCell, { flex: 2, textAlign: 'left', fontWeight: 'bold' }]}>
+              {item.playerName || item.teamName || 'Unknown'}
+            </Text>
+            <Text style={[styles.pCell, { flex: 1 }]}>{item.totalWins || item.matchesWon || 0}-{item.totalLosses || item.matchesLost || 0}</Text>
+            <Text style={[styles.pCell, { flex: 1, color: '#FF6A00', fontWeight: '800' }]}>
+              {item.performanceScore || item.totalPoints || item.winRate || 0}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
+  // Calculate highlighted path logic
+  const handlePlayerPress = (playerId) => {
+    if (!playerId) return;
+
+    // Toggle off if already selected
+    if (highlightedPlayerId === playerId) {
+      setHighlightedPlayerId(null);
+      setHighlightedPathIds(new Set());
+      return;
+    }
+
+    setHighlightedPlayerId(playerId);
+
+    // 1. Find all matches player actually participated in
+    const playedMatches = knockoutMatches.filter(m =>
+      (m.player1?.playerId?._id === playerId || m.player1?.playerId === playerId || m.player1?._id === playerId) ||
+      (m.player2?.playerId?._id === playerId || m.player2?.playerId === playerId || m.player2?._id === playerId)
+    );
+
+    if (playedMatches.length === 0) return;
+
+    // 2. Find the path forward from the last played match
+    // Sort by round number to find the "latest" match they were in
+    playedMatches.sort((a, b) => (a.roundNumber || 0) - (b.roundNumber || 0));
+
+    const pathIds = new Set(playedMatches.map(m => m._id));
+
+    let lastMatch = playedMatches[playedMatches.length - 1];
+
+    // Determine max round to stop infinite loops
+    const maxRound = Math.max(...knockoutMatches.map(m => m.roundNumber || 0));
+    let currentRound = lastMatch.roundNumber || 0;
+    let currentMatchNum = lastMatch.matchNumber || 0;
+
+    // Project forward to the final
+    while (currentRound < maxRound) {
+      const nextRound = currentRound + 1;
+      // Standard bracket logic: Next Match = ceil(CurrentMatch / 2)
+      const nextMatchNum = Math.ceil(currentMatchNum / 2);
+
+      const nextMatch = knockoutMatches.find(m =>
+        (m.roundNumber === nextRound) && (m.matchNumber === nextMatchNum)
+      );
+
+      if (nextMatch) {
+        pathIds.add(nextMatch._id);
+        currentRound = nextMatch.roundNumber;
+        currentMatchNum = nextMatch.matchNumber;
+      } else {
+        break; // path broken or data missing
+      }
+    }
+
+    setHighlightedPathIds(pathIds);
+  };
+
+  const renderBracket = () => {
+    if (!knockoutMatches || knockoutMatches.length === 0) {
+      return (
+        <View style={styles.noDataBox}>
+          <Ionicons name="trophy-outline" size={48} color="#ddd" />
+          <Text style={styles.noDataText}>Knockout stage matches have not been generated yet.</Text>
+        </View>
+      );
+    }
+
+    // Derive category per match. Build a playerName/playerId → category lookup
+    // from every available source: topPlayersByGroup (has category per player),
+    // the groups array (players[] with category inherited from group.category).
+    const nameToCategory = {};
+    const idToCategory = {};
+    Object.values(topPlayersByGroup).forEach((players) => {
+      if (!Array.isArray(players)) return;
+      players.forEach((p) => {
+        const cat = p?.category;
+        if (!cat) return;
+        const nm = p?.playerName || p?.userName || p?.name;
+        if (nm) nameToCategory[nm] = cat;
+        const pid = p?.playerId?.toString?.() || p?.playerId;
+        if (pid) idToCategory[pid] = cat;
+      });
+    });
+    groups.forEach((g) => {
+      if (!g?.category) return;
+      (g.players || []).forEach((p) => {
+        const nm = p?.userName || p?.playerName || p?.name;
+        if (nm && !nameToCategory[nm]) nameToCategory[nm] = g.category;
+        const pid = p?.playerId?.toString?.() || p?.playerId;
+        if (pid && !idToCategory[pid]) idToCategory[pid] = g.category;
+      });
+    });
+
+    const deriveCategory = (m) => {
+      if (m?.category) return m.category;
+      const fromGroup = m?.player1?.fromGroup || m?.player2?.fromGroup;
+      if (fromGroup) {
+        const g = groups.find(
+          (gr) => gr?.name === fromGroup || gr?.groupName === fromGroup
+        );
+        if (g?.category) return g.category;
+      }
+      const p1Id = m?.player1?.playerId?._id?.toString?.() || m?.player1?.playerId?.toString?.();
+      const p2Id = m?.player2?.playerId?._id?.toString?.() || m?.player2?.playerId?.toString?.();
+      const p1n = m?.player1?.playerName || m?.player1?.playerId?.name;
+      const p2n = m?.player2?.playerName || m?.player2?.playerId?.name;
+      return (
+        idToCategory[p1Id] ||
+        idToCategory[p2Id] ||
+        nameToCategory[p1n] ||
+        nameToCategory[p2n] ||
+        null
+      );
+    };
+
+    const knockoutCategories = Array.from(
+      new Set(knockoutMatches.map(deriveCategory).filter(Boolean))
+    );
+    const filteredKnockoutMatches = knockoutCategoryFilter === 'all'
+      ? knockoutMatches
+      : knockoutMatches.filter((m) => deriveCategory(m) === knockoutCategoryFilter);
+
+    // 1. Group matches by round number to determine layout
+    const roundGroups = {};
+    filteredKnockoutMatches.forEach(match => {
+      let rNum = match.roundNumber;
+      if (!rNum) {
+        const rName = (match.round || '').toLowerCase();
+        if (rName.includes('final') && !rName.includes('semi') && !rName.includes('quarter')) rNum = 100;
+        else if (rName.includes('semi')) rNum = 99;
+        else if (rName.includes('quarter')) rNum = 98;
+        else if (rName.includes('pre')) rNum = 97;
+        else rNum = 1;
+      }
+
+      if (!roundGroups[rNum]) roundGroups[rNum] = [];
+      roundGroups[rNum].push(match);
+    });
+
+    const sortedRoundKeys = Object.keys(roundGroups).sort((a, b) => a - b);
+
+    // Build a top-4 podium from the filtered matches.
+    // Champion + Runner-up = final match. Semi-finalists = losers of semi round.
+    const podium = (() => {
+      const getWinnerName = (m) =>
+        m.winnerName ||
+        m.winner?.playerName ||
+        m.result?.winner?.playerName ||
+        m.matchResult?.winner?.playerName ||
+        null;
+      const getP1 = (m) => m.player1?.playerName || m.player1?.playerId?.name || null;
+      const getP2 = (m) => m.player2?.playerName || m.player2?.playerId?.name || null;
+
+      const finals = filteredKnockoutMatches.filter((m) => {
+        const r = String(m.round || '').toLowerCase();
+        return r === 'final' || (r.includes('final') && !r.includes('semi') && !r.includes('quarter') && !r.includes('pre'));
+      });
+      const finalMatch = finals.find((m) => String(m.status).toLowerCase() === 'completed');
+      if (!finalMatch) return null;
+
+      const championName = getWinnerName(finalMatch);
+      if (!championName) return null;
+      const runnerUpName = championName === getP1(finalMatch) ? getP2(finalMatch) : getP1(finalMatch);
+
+      const semis = filteredKnockoutMatches.filter((m) => {
+        const r = String(m.round || '').toLowerCase();
+        return r.includes('semi');
+      });
+      const semiLosers = semis
+        .filter((m) => String(m.status).toLowerCase() === 'completed')
+        .map((m) => {
+          const w = getWinnerName(m);
+          return w === getP1(m) ? getP2(m) : getP1(m);
+        })
+        .filter(Boolean);
+
+      return { championName, runnerUpName, semiLosers };
+    })();
+
+    const hasResults = !!podium;
+
+    // Constant for layout calculations
+    const CARD_HEIGHT = 70; // Fixed card height
+    const COLUMN_WIDTH = 220; // Fixed column width for alignment
+    const COLUMN_MARGIN = 40; // Spacing between columns
+
+    // Calculate dynamic margins for each round to ensure tree alignment
+    const roundMargins = {};
+    let currentMargin = 10; // Base margin for Round 1
+
+    sortedRoundKeys.forEach((key, index) => {
+      roundMargins[key] = currentMargin;
+      currentMargin = (currentMargin * 2) + (CARD_HEIGHT / 2);
+    });
+
+    return (
+      <View style={styles.tabContent}>
+        {/* Results button — surfaced once the final is completed for current filter */}
+        {hasResults && (
+          <TouchableOpacity
+            style={styles.resultsBtn}
+            onPress={() => setShowResultsModal(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="trophy" size={16} color="#fff" />
+            <Text style={styles.resultsBtnText}>View Results</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Category Filter — which categories are playing this knockout */}
+        {knockoutCategories.length > 1 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryFilterRow}
+            style={{ marginBottom: 14 }}
+          >
+            <TouchableOpacity
+              onPress={() => setKnockoutCategoryFilter('all')}
+              style={[
+                styles.categoryChip,
+                knockoutCategoryFilter === 'all' && styles.categoryChipActive,
+              ]}
+              activeOpacity={0.8}
+            >
+              <Text style={[
+                styles.categoryChipText,
+                knockoutCategoryFilter === 'all' && styles.categoryChipTextActive,
+              ]}>
+                All ({knockoutMatches.length})
+              </Text>
+            </TouchableOpacity>
+            {knockoutCategories.map((cat) => {
+              const count = knockoutMatches.filter((m) => deriveCategory(m) === cat).length;
+              const isActive = knockoutCategoryFilter === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => setKnockoutCategoryFilter(cat)}
+                  style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    isActive && styles.categoryChipTextActive,
+                  ]}>
+                    {formatCategory(cat)} ({count})
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
+
+        {filteredKnockoutMatches.length === 0 ? (
+          <View style={styles.noDataBox}>
+            <Ionicons name="trophy-outline" size={48} color="#ddd" />
+            <Text style={styles.noDataText}>No knockout matches in this category.</Text>
+          </View>
+        ) : null}
+
+        {/* Main Horizontal ScrollView - Moves both Headers and Match Grid */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bracketContainer}>
+          <View>
+            {/* 1. Sticky Header Row (Round Names) */}
+            <View style={styles.bracketHeaderRow}>
+              {sortedRoundKeys.map((roundKey, rIndex) => {
+                const matchesInRound = roundGroups[roundKey];
+                const roundTitle = matchesInRound[0]?.round ? formatCategory(matchesInRound[0].round) : `Round ${rIndex + 1}`;
+                return (
+                  <View key={`header-${roundKey}`} style={{ width: COLUMN_WIDTH, marginRight: COLUMN_MARGIN, alignItems: 'center' }}>
+                    <Text style={styles.roundTitle}>{roundTitle}</Text>
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* 2. Vertically Scrollable Match Grid */}
+            {/* nestedScrollEnabled is crucial if parent is also a scrollview */}
+            <ScrollView
+              style={{ maxHeight: 600 }}
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                {/* Add ability to reset selection by clicking background */}
+                <TouchableOpacity activeOpacity={1} style={StyleSheet.absoluteFill} onPress={() => {
+                  if (highlightedPlayerId) {
+                    setHighlightedPlayerId(null);
+                    setHighlightedPathIds(new Set());
+                  }
+                }} />
+
+                {sortedRoundKeys.map((roundKey, rIndex) => {
+                  const matchesInRound = roundGroups[roundKey];
+                  matchesInRound.sort((a, b) => (a.matchNumber || 0) - (b.matchNumber || 0));
+
+                  // Calculate connector height for this round
+                  const myMargin = roundMargins[roundKey];
+                  const nextRoundKey = sortedRoundKeys[rIndex + 1];
+                  const nextMargin = nextRoundKey ? roundMargins[nextRoundKey] : 0;
+                  const connectorHeight = nextMargin ? (nextMargin - myMargin) : 0;
+
+                  return (
+                    <View key={roundKey} style={{ width: COLUMN_WIDTH, marginRight: COLUMN_MARGIN }} pointerEvents="box-none">
+                      <View style={styles.roundMatchesContainer} pointerEvents="box-none">
+                        {matchesInRound.map((match, mIndex) => {
+                          const p1Name = match.player1?.playerName || match.player1?.playerId?.name || match.player1?.name || ((match.player1 || match.player1?.playerId) ? 'TBD' : 'Bye');
+                          const p2Name = match.player2?.playerName || match.player2?.playerId?.name || match.player2?.name || ((match.player2 || match.player2?.playerId) ? 'TBD' : 'Bye');
+
+                          // Extract IDs for interaction
+                          const p1Id = match.player1?.playerId?._id || match.player1?.playerId || match.player1?._id;
+                          const p2Id = match.player2?.playerId?._id || match.player2?.playerId || match.player2?._id;
+
+                          const p1Score = match.score?.player1Sets ?? match.result?.finalScore?.player1Sets ?? match.result?.player1Sets ?? 0;
+                          const p2Score = match.score?.player2Sets ?? match.result?.finalScore?.player2Sets ?? match.result?.player2Sets ?? 0;
+
+                          const isLive = match.status === 'in-progress';
+                          const isCompleted = match.status === 'completed';
+
+                          // Winner detection — try multiple fields, fall back to score compare
+                          const winnerName =
+                            match.winnerName ||
+                            match.winner?.playerName ||
+                            match.result?.winner?.playerName ||
+                            match.matchResult?.winner?.playerName ||
+                            null;
+                          const p1Won = isCompleted && (
+                            (winnerName && winnerName === p1Name) ||
+                            (!winnerName && p1Score > p2Score)
+                          );
+                          const p2Won = isCompleted && (
+                            (winnerName && winnerName === p2Name) ||
+                            (!winnerName && p2Score > p1Score)
+                          );
+
+                          // Highlighting Logic
+                          const isHighlighted = highlightedPathIds.has(match._id);
+                          const isDimmed = highlightedPlayerId && !isHighlighted;
+
+                          // Specific player highlights within the card
+                          const p1IsSelected = highlightedPlayerId && (p1Id === highlightedPlayerId);
+                          const p2IsSelected = highlightedPlayerId && (p2Id === highlightedPlayerId);
+
+                          return (
+                            <View key={match._id || mIndex} style={[styles.bracketMatchWrapper, { marginVertical: myMargin, width: '100%' }]} pointerEvents="box-none">
+                              {/* Left Connector (Receive from previous) */}
+                              {rIndex > 0 && <View style={[styles.connectorLeft, isDimmed && { opacity: 0.1 }]} />}
+
+                              <TouchableOpacity
+                                onLongPress={() => {
+                                  // Long-press a player to highlight their bracket path
+                                  if (p1Id || p2Id) handlePlayerPress(p1Id || p2Id);
+                                }}
+                                onPress={() => {
+                                  // Phase 4e: authorized umpires route to scorer; everyone else opens the read-only modal.
+                                  if (isAuthorizedForMatch(match) && !isCompleted) {
+                                    const matchLabel = match.matchNumber
+                                      ? `M${match.matchNumber} • ${(match.player1?.playerName || match.player1?.userName || 'P1')} vs ${(match.player2?.playerName || match.player2?.userName || 'P2')}`
+                                      : (tournamentName || 'Match');
+                                    navigation.navigate('RefereeMatchScorer', {
+                                      matchId: match._id,
+                                      matchLabel,
+                                    });
+                                  } else {
+                                    setSelectedMatch(match);
+                                  }
+                                }}
+                                activeOpacity={0.85}
+                                style={[
+                                  styles.bracketCard,
+                                  { height: CARD_HEIGHT, width: 180 },
+                                  isDimmed && { opacity: 0.3, borderColor: '#eee' },
+                                  isHighlighted && { borderColor: '#004E93', borderWidth: 2, elevation: 4 }
+                                ]}
+                              >
+                                <View style={[styles.bracketRow, p1Won && styles.bracketRowWon]}>
+                                  <Text
+                                    style={[
+                                      styles.bracketName,
+                                      p1Won && styles.bracketWinner,
+                                      p1IsSelected && { color: '#004E93', fontWeight: 'bold' }
+                                    ]}
+                                    numberOfLines={1}
+                                  >
+                                    {p1Name}
+                                  </Text>
+                                  <Text style={[styles.bracketScore, isLive && styles.liveScoreText]}>{p1Score}</Text>
+                                </View>
+
+                                <View style={styles.bracketDivider} />
+
+                                <View style={[styles.bracketRow, p2Won && styles.bracketRowWon]}>
+                                  <Text
+                                    style={[
+                                      styles.bracketName,
+                                      p2Won && styles.bracketWinner,
+                                      p2IsSelected && { color: '#004E93', fontWeight: 'bold' }
+                                    ]}
+                                    numberOfLines={1}
+                                  >
+                                    {p2Name}
+                                  </Text>
+                                  <Text style={[styles.bracketScore, isLive && styles.liveScoreText]}>{p2Score}</Text>
+                                </View>
+
+                                {match.status && !isCompleted && (
+                                  <View style={[styles.bracketStatusIndicator,
+                                  { backgroundColor: isLive ? '#2196F3' : '#FF9800' }
+                                  ]} />
+                                )}
+                              </TouchableOpacity>
+
+                              {/* Right Connectors (Feed to next) */}
+                              {rIndex < sortedRoundKeys.length - 1 && (
+                                <View style={[styles.connectorRightContainer, isDimmed && { opacity: 0.1 }]}>
+                                  {/* Horizontal stub from card */}
+                                  <View style={styles.connectorRightLine} />
+
+                                  {/* Vertical Forks */}
+                                  {mIndex % 2 === 0 ? (
+                                    // Even index: Fork DOWN
+                                    <View style={[styles.connectorRightDown, { height: connectorHeight + 1 }]} /> // +1 for overlap
+                                  ) : (
+                                    // Odd index: Fork UP
+                                    <View style={[styles.connectorRightUp, { height: connectorHeight + 1 }]} />
+                                  )}
+                                </View>
+                              )}
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        </ScrollView>
+
+        {/* Results Modal — podium view (top 4) */}
+        <Modal
+          visible={showResultsModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowResultsModal(false)}
+        >
+          <View style={styles.resultsOverlay}>
+            <View style={styles.resultsCard}>
+              <LinearGradient
+                colors={['#F4CE74', '#FF7426']}
+                style={styles.resultsHeader}
+              >
+                <Ionicons name="trophy" size={28} color="#fff" />
+                <Text style={styles.resultsTitle}>
+                  {knockoutCategoryFilter === 'all'
+                    ? 'Tournament Results'
+                    : `${formatCategory(knockoutCategoryFilter)} — Results`}
+                </Text>
+              </LinearGradient>
+
+              {hasResults && (
+                <View style={styles.resultsBody}>
+                  <View style={[styles.podiumRow, styles.podiumChampion]}>
+                    <View style={[styles.podiumMedal, { backgroundColor: '#FFD700' }]}>
+                      <Text style={styles.podiumRank}>1</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.podiumLabel}>Champion</Text>
+                      <Text style={styles.podiumName} numberOfLines={1}>
+                        {podium.championName}
+                      </Text>
+                    </View>
+                    <Ionicons name="trophy" size={22} color="#FFB300" />
+                  </View>
+
+                  {podium.runnerUpName && (
+                    <View style={styles.podiumRow}>
+                      <View style={[styles.podiumMedal, { backgroundColor: '#C0C0C0' }]}>
+                        <Text style={styles.podiumRank}>2</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.podiumLabel}>Runner-up</Text>
+                        <Text style={styles.podiumName} numberOfLines={1}>
+                          {podium.runnerUpName}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {podium.semiLosers.length > 0 && (
+                    <>
+                      <Text style={styles.podiumSectionLabel}>Semi-finalists</Text>
+                      {podium.semiLosers.map((name, i) => (
+                        <View key={`semi-${i}`} style={styles.podiumRow}>
+                          <View style={[styles.podiumMedal, { backgroundColor: '#CD7F32' }]}>
+                            <Text style={styles.podiumRank}>{3}</Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.podiumName} numberOfLines={1}>
+                              {name}
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
+                    </>
+                  )}
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.resultsCloseBtn}
+                onPress={() => setShowResultsModal(false)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.resultsCloseText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  };
+
+  const renderContent = () => {
+    switch (viewMode) {
+      case 'GROUPS': return renderGroups();
+      case 'MATCHES': return renderMatches();
+      case 'LEADERBOARD': return renderLeaderboardMode();
+      case 'KNOCKOUT': return renderBracket();
+      default: return renderLeaderboardMode();
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF6A00']} />
+        }
+      >
+        {/* Tournament Stats Card (Small) */}
+        <View style={styles.tournamentSummaryCard}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryVal}>{tournamentStats?.totalMatches || 0}</Text>
+            <Text style={styles.summaryLbl}>Matches</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryVal}>{tournamentStats?.completedMatches || 0}</Text>
+            <Text style={styles.summaryLbl}>Finished</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryVal}>{groups.length || '-'}</Text>
+            <Text style={styles.summaryLbl}>Groups</Text>
+          </View>
+        </View>
+
+        {/* Tab System for Group Stage */}
+        {isGroupStage && (
+          <View style={styles.tabBar}>
+            <TouchableOpacity
+              style={[styles.tabItem, viewMode === 'LEADERBOARD' && styles.activeTabItem]}
+              onPress={() => setViewMode('LEADERBOARD')}
+            >
+              <Text style={[styles.tabText, viewMode === 'LEADERBOARD' && styles.activeTabText]}>Full Standings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.tabItem, (viewMode === 'GROUPS' || viewMode === 'MATCHES') && styles.activeTabItem]}
+              onPress={() => setViewMode(selectedGroup ? 'MATCHES' : 'GROUPS')}
+            >
+              <Text style={[styles.tabText, (viewMode === 'GROUPS' || viewMode === 'MATCHES') && styles.activeTabText]}>Groups</Text>
+            </TouchableOpacity>
+
+            {knockoutMatches.length > 0 && (
+              <TouchableOpacity
+                style={[styles.tabItem, viewMode === 'KNOCKOUT' && styles.activeTabItem]}
+                onPress={() => setViewMode('KNOCKOUT')}
+              >
+                <Text style={[styles.tabText, viewMode === 'KNOCKOUT' && styles.activeTabText]}>Knockout</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#FF6A00" style={{ marginTop: 50 }} />
+        ) : (
+          renderContent()
+        )}
+      </ScrollView>
+
+      {/* Match Details Modal */}
+      <Modal
+        visible={!!selectedMatch}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedMatch(null)}
+      >
+        <View style={styles.matchModalOverlay}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setSelectedMatch(null)} />
+          <View style={styles.matchModalSheet}>
+            <View style={styles.matchModalHandle} />
+
+            {selectedMatch && (() => {
+              const m = selectedMatch;
+              const p1Name = m.player1?.playerName || m.player1?.playerId?.name || m.player1?.name || 'TBD';
+              const p2Name = m.player2?.playerName || m.player2?.playerId?.name || m.player2?.name || 'TBD';
+              const p1Sets = m.score?.player1Sets ?? m.result?.finalScore?.player1Sets ?? 0;
+              const p2Sets = m.score?.player2Sets ?? m.result?.finalScore?.player2Sets ?? 0;
+              const winnerName = m.winnerName || m.result?.winner?.playerName || m.winner?.playerName;
+              const sets = Array.isArray(m.sets) ? m.sets : [];
+              const courtNumber = m.courtNumber;
+              const roundLabel = m.round ? formatCategory(m.round) : `Round ${m.roundNumber || ''}`;
+              const isCompleted = m.status === 'completed' || m.status === 'COMPLETED';
+              const isLive = m.status === 'in-progress';
+
+              return (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {/* Header */}
+                  <View style={styles.matchModalHeader}>
+                    <View>
+                      <Text style={styles.matchModalRound}>{roundLabel}</Text>
+                      {courtNumber && <Text style={styles.matchModalCourt}>Court {courtNumber}</Text>}
+                    </View>
+                    <View style={[styles.matchModalStatusBadge, {
+                      backgroundColor: isCompleted ? '#E8F5E9' : isLive ? '#FFEBEE' : '#FFF3E0',
+                    }]}>
+                      {isLive && <View style={styles.matchModalLiveDot} />}
+                      <Text style={[styles.matchModalStatusText, {
+                        color: isCompleted ? '#2E7D32' : isLive ? '#D32F2F' : '#FF8F00',
+                      }]}>
+                        {isCompleted ? 'COMPLETED' : isLive ? 'LIVE' : 'SCHEDULED'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Players + final set score */}
+                  <View style={styles.matchModalScoreboard}>
+                    <View style={styles.matchModalPlayerCol}>
+                      <Text style={[
+                        styles.matchModalPlayerName,
+                        winnerName === p1Name && styles.matchModalWinnerName,
+                      ]} numberOfLines={2}>
+                        {p1Name}
+                      </Text>
+                      {winnerName === p1Name && (
+                        <View style={styles.matchModalWinnerChip}>
+                          <Ionicons name="trophy" size={11} color="#FFB300" />
+                          <Text style={styles.matchModalWinnerChipText}>Winner</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={styles.matchModalScoreCol}>
+                      <Text style={styles.matchModalScoreBig}>{p1Sets}</Text>
+                      <Text style={styles.matchModalScoreSep}>:</Text>
+                      <Text style={styles.matchModalScoreBig}>{p2Sets}</Text>
+                    </View>
+                    <View style={styles.matchModalPlayerCol}>
+                      <Text style={[
+                        styles.matchModalPlayerName,
+                        winnerName === p2Name && styles.matchModalWinnerName,
+                      ]} numberOfLines={2}>
+                        {p2Name}
+                      </Text>
+                      {winnerName === p2Name && (
+                        <View style={styles.matchModalWinnerChip}>
+                          <Ionicons name="trophy" size={11} color="#FFB300" />
+                          <Text style={styles.matchModalWinnerChipText}>Winner</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Score breakdown — shape-aware */}
+                  {sets.length > 0 ? (
+                    hasNestedGames(m.matchFormat) ? (
+                      // ─── NESTED (Tennis): set tabs + per-set game grid ───
+                      <View style={styles.matchModalSection}>
+                        <Text style={styles.matchModalSectionTitle}>Set-by-Set Scores</Text>
+
+                        <ScrollView
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          contentContainerStyle={styles.matchModalSetTabs}
+                        >
+                          {sets.map((set, idx) => {
+                            const isActive = idx === activeSetIndex;
+                            const setWon = !!set.winner?.playerName;
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                activeOpacity={0.8}
+                                onPress={() => setActiveSetIndex(idx)}
+                                style={[
+                                  styles.matchModalSetTab,
+                                  isActive && styles.matchModalSetTabActive,
+                                ]}
+                              >
+                                <Text style={[
+                                  styles.matchModalSetTabText,
+                                  isActive && styles.matchModalSetTabTextActive,
+                                ]}>
+                                  Set {set.setNumber || idx + 1}
+                                </Text>
+                                {setWon && (
+                                  <View style={[
+                                    styles.matchModalSetTabDot,
+                                    isActive && { backgroundColor: '#fff' },
+                                  ]} />
+                                )}
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+
+                        {(() => {
+                          const set = sets[activeSetIndex];
+                          if (!set) return null;
+                          const games = Array.isArray(set.games) ? set.games : [];
+                          const setWinner = set.winner?.playerName;
+                          return (
+                            <View style={styles.matchModalSetCard}>
+                              {setWinner && (
+                                <View style={styles.matchModalSetHeader}>
+                                  <Text style={styles.matchModalSetWinner}>
+                                    Won by <Text style={{ fontWeight: '800', color: '#FF6A00' }}>{setWinner}</Text>
+                                  </Text>
+                                </View>
+                              )}
+                              {games.length > 0 ? (
+                                <View style={styles.matchModalGameGrid}>
+                                  <View style={styles.matchModalGameRow}>
+                                    <Text style={styles.matchModalGameLabelHeader}>Game</Text>
+                                    <Text style={styles.matchModalGameScoreHeader} numberOfLines={1}>{p1Name}</Text>
+                                    <Text style={styles.matchModalGameScoreHeader} numberOfLines={1}>{p2Name}</Text>
+                                  </View>
+                                  {games.map((g, gi) => {
+                                    const s1 = g.finalScore?.player1 ?? 0;
+                                    const s2 = g.finalScore?.player2 ?? 0;
+                                    const gameWinner = g.winner?.playerName;
+                                    return (
+                                      <View key={gi} style={styles.matchModalGameRow}>
+                                        <Text style={styles.matchModalGameLabel}>Game {g.gameNumber || gi + 1}</Text>
+                                        <Text style={[
+                                          styles.matchModalGameScore,
+                                          gameWinner === p1Name && styles.matchModalGameScoreWin,
+                                        ]}>{s1}</Text>
+                                        <Text style={[
+                                          styles.matchModalGameScore,
+                                          gameWinner === p2Name && styles.matchModalGameScoreWin,
+                                        ]}>{s2}</Text>
+                                      </View>
+                                    );
+                                  })}
+                                </View>
+                              ) : (
+                                <Text style={styles.matchModalNoGames}>No game-level data for this set</Text>
+                              )}
+                            </View>
+                          );
+                        })()}
+                      </View>
+                    ) : (
+                      // ─── FLAT (Table Tennis / Badminton): no tabs, one Game row per set ───
+                      <View style={styles.matchModalSection}>
+                        <Text style={styles.matchModalSectionTitle}>Game-by-Game Scores</Text>
+                        <View style={styles.matchModalGameGrid}>
+                          <View style={styles.matchModalGameRow}>
+                            <Text style={styles.matchModalGameLabelHeader}>Game</Text>
+                            <Text style={styles.matchModalGameScoreHeader} numberOfLines={1}>{p1Name}</Text>
+                            <Text style={styles.matchModalGameScoreHeader} numberOfLines={1}>{p2Name}</Text>
+                          </View>
+                          {sets.map((set, idx) => {
+                            const g = (Array.isArray(set.games) && set.games[0]) || {};
+                            const s1 = g.finalScore?.player1 ?? 0;
+                            const s2 = g.finalScore?.player2 ?? 0;
+                            const gameWinner = g.winner?.playerName || set.winner?.playerName;
+                            return (
+                              <View key={idx} style={styles.matchModalGameRow}>
+                                <Text style={styles.matchModalGameLabel}>Game {set.setNumber || idx + 1}</Text>
+                                <Text style={[
+                                  styles.matchModalGameScore,
+                                  gameWinner === p1Name && styles.matchModalGameScoreWin,
+                                ]}>{s1}</Text>
+                                <Text style={[
+                                  styles.matchModalGameScore,
+                                  gameWinner === p2Name && styles.matchModalGameScoreWin,
+                                ]}>{s2}</Text>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    )
+                  ) : isCompleted ? (
+                    <View style={styles.matchModalEmptyBox}>
+                      <Ionicons name="information-circle-outline" size={28} color="#CFD8DC" />
+                      <Text style={styles.matchModalEmptyText}>Detailed set scores not available</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.matchModalEmptyBox}>
+                      <Ionicons name="time-outline" size={28} color="#CFD8DC" />
+                      <Text style={styles.matchModalEmptyText}>Match has not started yet</Text>
+                    </View>
+                  )}
+
+                  <TouchableOpacity
+                    style={styles.matchModalCloseBtn}
+                    onPress={() => setSelectedMatch(null)}
+                  >
+                    <Text style={styles.matchModalCloseBtnText}>Close</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              );
+            })()}
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  tournamentSummaryCard: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 15,
+    borderRadius: 20,
+    justifyContent: 'space-between',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  summaryVal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  summaryLbl: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: '#f0f0f0',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tabItem: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  activeTabItem: {
+    backgroundColor: 'white',
+    elevation: 2,
+    shadowOpacity: 0.1,
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#FF6A00',
+    fontWeight: 'bold',
+  },
+  tabContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  groupGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  groupCard: {
+    width: '48%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowOpacity: 0.1,
+  },
+  groupCardHeader: {
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  groupCardTitle: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  groupCardBody: {
+    padding: 12,
+  },
+  groupStatRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  groupStatLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  groupStatValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 4,
+  },
+  groupStatus: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  groupStatusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  groupCardFooter: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  viewMatchesText: {
+    fontSize: 12,
+    color: '#FF6A00',
+    fontWeight: '600',
+  },
+  groupTopPlayersBox: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F5F5F5',
+  },
+  groupTopPlayersHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 6,
+  },
+  groupTopPlayersTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FF6A00',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  groupTopPlayerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    gap: 6,
+  },
+  groupTopPlayerRank: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  groupTopPlayerRankText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  groupTopPlayerName: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#37474F',
+  },
+  groupTopPlayerPts: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FF6A00',
+  },
+  categoryFilterRow: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    gap: 8,
+  },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#ECEFF1',
+    marginRight: 8,
+  },
+  categoryChipActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#546E7A',
+    letterSpacing: 0.3,
+  },
+  categoryChipTextActive: {
+    color: '#fff',
+  },
+  backToGroups: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  backToGroupsText: {
+    color: '#FF6A00',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  matchGroupHeader: {
+    marginBottom: 16,
+  },
+  matchGroupTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  matchSubTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+    marginTop: 10,
+  },
+  standingsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 24,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  standingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    paddingBottom: 10,
+  },
+  standingsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 8,
+  },
+  standingsList: {
+    width: '100%',
+  },
+  standingsLabelRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  standingLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#999',
+    textTransform: 'uppercase',
+  },
+  standingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f9f9f9',
+  },
+  qualifierRow: {
+    backgroundColor: '#F1F8E9',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+  },
+  posBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    flex: 0.5,
+  },
+  firstPos: {
+    backgroundColor: '#FFD700',
+  },
+  secondPos: {
+    backgroundColor: '#C0C0C0',
+  },
+  posText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  standingPlayerName: {
+    flex: 2,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  standingPld: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+  },
+  standingPts: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FF6A00',
+    textAlign: 'center',
+  },
+  qualifierTag: {
+    position: 'absolute',
+    right: 4,
+    top: 14,
+  },
+  matchCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowOpacity: 0.05,
+  },
+  tapScoreHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#FFEDD5',
+  },
+  tapScoreHintText: {
+    color: '#FF6A00',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  matchMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  matchDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  matchStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  matchStatusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  matchRound: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FF6A00',
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  matchTeams: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  matchTeam: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  matchTeamName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+  },
+  matchScore: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FF6A00',
+    marginVertical: 4,
+  },
+  // matchVs: {
+  //   paddingHorizontal: 10,
+  // },
+  vsText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#999',
+    textAlign: 'center',
+  },
+  matchCourt: {
+    fontSize: 10,
+    color: '#666',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  roundBadge: {
+    flex: 1,
+  },
+  matchWinnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  winnerLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 6,
+  },
+  winnerName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+  },
+  liveIndicatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    backgroundColor: '#FFEBEE',
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F44336',
+    marginRight: 6,
+  },
+  liveText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#D32F2F',
+    letterSpacing: 0.5,
+  },
+  liveScoreText: {
+    color: '#D32F2F',
+    fontWeight: '900',
+  },
+  premiumTable: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowOpacity: 0.1,
+  },
+  premiumTableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#333',
+    padding: 12,
+  },
+  pHeaderCell: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  premiumTableRow: {
+    flexDirection: 'row',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  topThreeRow: {
+    backgroundColor: '#FFF9F2',
+  },
+  pCell: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
+  },
+  noDataBox: {
+    alignItems: 'center',
+    padding: 40,
+    marginTop: 20,
+  },
+  noDataText: {
+    marginTop: 12,
+    color: '#999',
+    fontSize: 14,
+  },
+  // Bracket Styles
+  bracketContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  bracketHeaderRow: {
+    flexDirection: 'row',
+    marginBottom: 6,
+    paddingHorizontal: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 8,
+  },
+  roundColumn: {
+    // Replaced by inline width
+  },
+  roundTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#004E93',
+    marginBottom: 20,
+    textTransform: 'uppercase',
+  },
+  roundMatchesContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  bracketMatchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    justifyContent: 'start', // Center card in wrapper
+  },
+  bracketCard: {
+    width: 160,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    padding: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    zIndex: 10,
+  },
+  bracketRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    marginHorizontal: -6,
+    borderRadius: 4,
+  },
+  bracketRowWon: {
+    backgroundColor: '#E8F5E9',
+  },
+  resultsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#FF6A00',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    marginBottom: 10,
+  },
+  resultsBtnText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  resultsOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  resultsCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  resultsHeader: {
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  resultsTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+    flex: 1,
+  },
+  resultsBody: {
+    padding: 14,
+  },
+  podiumRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    gap: 12,
+  },
+  podiumChampion: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 10,
+    borderBottomWidth: 0,
+    marginBottom: 8,
+  },
+  podiumMedal: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  podiumRank: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 14,
+  },
+  podiumLabel: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  podiumName: {
+    color: '#1E293B',
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  podiumSectionLabel: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 12,
+    marginBottom: 4,
+    paddingHorizontal: 10,
+  },
+  resultsCloseBtn: {
+    backgroundColor: '#1E293B',
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultsCloseText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  bracketName: {
+    fontSize: 12,
+    color: '#333',
+    flex: 1,
+    marginRight: 8,
+  },
+  bracketWinner: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  bracketScore: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#666',
+  },
+  bracketDivider: {
+    height: 1,
+    backgroundColor: '#f0f0f0',
+    marginVertical: 2,
+  },
+  bracketStatusIndicator: {
+    position: 'absolute',
+    top: 4,
+    right: 8,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  // Connectors
+  connectorLeft: {
+    position: 'absolute',
+    left: -20,
+    top: '50%',
+    width: 20,
+    height: 1,
+    backgroundColor: '#999',
+  },
+  connectorRightContainer: {
+    position: 'absolute',
+    right: -30,
+    top: 0,
+    bottom: 0,
+    width: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  connectorRightLine: {
+    position: 'absolute',
+    left: -20, // Start inside the wrapper (at card edge)
+    top: '50%',
+    width: 20,
+    height: 1,
+    backgroundColor: '#999',
+  },
+  connectorRightDown: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    width: 1,
+    height: 40, // Fixed height for visual structure
+    backgroundColor: '#999',
+  },
+  connectorRightUp: {
+    position: 'absolute',
+    left: 0,
+    bottom: '50%',
+    width: 1,
+    height: 40, // Fixed height for visual structure
+    backgroundColor: '#999',
+  },
+
+  // Match Details Modal
+  matchModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  matchModalSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 24,
+    maxHeight: '88%',
+  },
+  matchModalHandle: {
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#ECEFF1',
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
+  matchModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  matchModalRound: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1A1A1A',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  matchModalCourt: {
+    fontSize: 12,
+    color: '#78909C',
+    fontWeight: '600',
+    marginTop: 3,
+  },
+  matchModalStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 5,
+  },
+  matchModalStatusText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  matchModalLiveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D32F2F',
+  },
+  matchModalScoreboard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 18,
+  },
+  matchModalPlayerCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  matchModalPlayerName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#37474F',
+    textAlign: 'center',
+  },
+  matchModalWinnerName: {
+    color: '#1A1A1A',
+    fontWeight: '900',
+  },
+  matchModalWinnerChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginTop: 6,
+    gap: 3,
+  },
+  matchModalWinnerChipText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFA000',
+  },
+  matchModalScoreCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  matchModalScoreBig: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#FF6A00',
+  },
+  matchModalScoreSep: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#CFD8DC',
+  },
+  matchModalSection: {
+    marginBottom: 14,
+  },
+  matchModalSectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#90A4AE',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  matchModalSetTabs: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    gap: 8,
+    marginBottom: 12,
+  },
+  matchModalSetTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: '#F5F7F8',
+    borderWidth: 1.5,
+    borderColor: '#ECEFF1',
+    gap: 6,
+    marginRight: 8,
+  },
+  matchModalSetTabActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  matchModalSetTabText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#546E7A',
+    letterSpacing: 0.3,
+  },
+  matchModalSetTabTextActive: {
+    color: '#fff',
+  },
+  matchModalSetTabDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF6A00',
+  },
+  matchModalSetCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ECEFF1',
+  },
+  matchModalSetHeader: {
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F7F8',
+  },
+  matchModalSetTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#263238',
+  },
+  matchModalSetWinner: {
+    fontSize: 13,
+    color: '#78909C',
+    fontWeight: '500',
+  },
+  matchModalGameGrid: {
+    gap: 4,
+  },
+  matchModalGameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  matchModalGameLabelHeader: {
+    flex: 1.2,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#B0BEC5',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  matchModalGameScoreHeader: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#B0BEC5',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  matchModalGameLabel: {
+    flex: 1.2,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#546E7A',
+  },
+  matchModalGameScore: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#455A64',
+    textAlign: 'center',
+  },
+  matchModalGameScoreWin: {
+    color: '#FF6A00',
+    fontWeight: '900',
+  },
+  matchModalNoGames: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  matchModalEmptyBox: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    gap: 8,
+  },
+  matchModalEmptyText: {
+    fontSize: 13,
+    color: '#90A4AE',
+    fontWeight: '500',
+  },
+  matchModalCloseBtn: {
+    backgroundColor: '#1A1A1A',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  matchModalCloseBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+});
+
+export default TournamentLeaderboardDetail;
