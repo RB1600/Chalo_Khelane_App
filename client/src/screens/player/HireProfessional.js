@@ -81,6 +81,8 @@ const HireProfessional = () => {
   const openHireForm = () => setHireFormOpen(true);
   const closeHireForm = () => setHireFormOpen(false);
 
+  const profileVisible = !!selectedPro && !hireFormOpen;
+
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const renderProCard = (pro) => (
@@ -180,7 +182,7 @@ const HireProfessional = () => {
 
       {/* Profile Bottom Sheet */}
       <Modal
-        visible={!!selectedPro}
+        visible={profileVisible}
         transparent
         animationType="slide"
         statusBarTranslucent
@@ -324,8 +326,9 @@ const HireProfessional = () => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.sheet}>
+          <View style={styles.hireSheet}>
             <ScrollView
+              style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 16 }}
               keyboardShouldPersistTaps="handled"
@@ -591,4 +594,357 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    
+    marginTop: 12,
+  },
+  rateWrap: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  rate: {
+    fontSize: 16,
+    fontFamily: "Montserrat_700Bold",
+    color: "#15A765",
+  },
+  rateUnit: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+  },
+  note: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#7A7A7A",
+  },
+  // Profile sheet
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  sheetAnchor: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  closeFabRow: {
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  closeFab: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  sheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    maxHeight: Dimensions.get("window").height * 0.88,
+  },
+  hireSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    height: Dimensions.get("window").height * 0.88,
+  },
+  sheetCaption: {
+    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    color: "#6F6F6F",
+    marginBottom: 12,
+  },
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  profileAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 12,
+    backgroundColor: "#F2F2F2",
+  },
+  profileTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  profileName: {
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  profileRole: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  profileSubRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+    gap: 14,
+  },
+  profileJobs: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+  },
+  profileRating: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  profileRatingText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#1F1F1F",
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginTop: 14,
+  },
+  priceAmount: {
+    fontSize: 24,
+    fontFamily: "Montserrat_700Bold",
+    color: "#15A765",
+  },
+  priceUnit: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+  },
+  sheetDivider: {
+    height: 1,
+    backgroundColor: "#EEEEEE",
+    marginVertical: 14,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: "#F4F5F7",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statTitle: {
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  statSub: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 4,
+  },
+  availCard: {
+    backgroundColor: "#F4F5F7",
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+  },
+  availTitle: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginBottom: 10,
+  },
+  availChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  dayChip: {
+    backgroundColor: "#E2F4EA",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  dayChipText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#1A8E4A",
+  },
+  weekendChip: {
+    backgroundColor: "#C5E9D2",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  weekendChipText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#15A765",
+  },
+  sectionHeading: {
+    fontSize: 16,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  aboutText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#4A4A4A",
+    lineHeight: 20,
+  },
+  certRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 4,
+  },
+  certChip: {
+    backgroundColor: "#F3EAFB",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  certText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#5B4FCF",
+  },
+  actionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 12,
+    gap: 10,
+  },
+  iconBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hireBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hireBtnText: {
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    color: "#FFFFFF",
+  },
+  // Hire Form sheet
+  hireFormTitle: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginBottom: 14,
+  },
+  proSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F4F5F7",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 18,
+  },
+  proSummaryAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  proSummaryName: {
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  proSummaryRole: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  proSummaryRate: {
+    fontSize: 16,
+    fontFamily: "Montserrat_700Bold",
+    color: "#15A765",
+  },
+  proSummaryUnit: {
+    fontSize: 11,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#1F1F1F",
+    marginBottom: 8,
+    marginTop: 6,
+  },
+  fieldLabelMuted: {
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#7A7A7A",
+  },
+  fieldInput: {
+    backgroundColor: "#EFF0F2",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    height: 44,
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#1F1F1F",
+    marginBottom: 14,
+  },
+  fieldTextarea: {
+    borderRadius: 14,
+    height: 90,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  fieldHint: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: -6,
+    marginBottom: 10,
+  },
+  noteText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#1E88F5",
+    lineHeight: 18,
+    marginTop: 6,
+  },
+  formDivider: {
+    height: 1,
+    backgroundColor: "#EEEEEE",
+    marginTop: 4,
+  },
+});
+
+export default HireProfessional;

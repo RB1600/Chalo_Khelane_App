@@ -23,6 +23,7 @@ const SAMPLE_JOBS = [
   {
     id: "1",
     title: "Referee Needed",
+    role: "Referee",
     venue: "Andheri Sports Complex",
     manager: "Amit Sharma (Manager)",
     location: "Baner, Pune",
@@ -34,26 +35,54 @@ const SAMPLE_JOBS = [
   },
   {
     id: "2",
-    title: "Referee Needed",
-    venue: "Andheri Sports Complex",
-    manager: "Amit Sharma (Manager)",
-    location: "Baner, Pune",
-    sport: "Cricket",
-    date: "14 Oct",
-    applicants: 8,
-    rate: "₹799/-",
+    title: "Coach Needed",
+    role: "Coach",
+    venue: "Powai Sports Arena",
+    manager: "Vikram Patel (Manager)",
+    location: "Powai, Mumbai",
+    sport: "Football",
+    date: "18 Oct",
+    applicants: 5,
+    rate: "₹1,200/-",
     rateUnit: "per hour",
   },
   {
     id: "3",
-    title: "Referee Needed",
-    venue: "Andheri Sports Complex",
-    manager: "Amit Sharma (Manager)",
-    location: "Baner, Pune  Andheri Sports Complex",
+    title: "Cameraman Needed",
+    role: "Cameraman",
+    venue: "DY Patil Stadium",
+    manager: "Neha Iyer (Manager)",
+    location: "Navi Mumbai",
     sport: "Cricket",
-    date: "14 Oct",
-    applicants: 8,
-    rate: "₹799/-",
+    date: "22 Oct",
+    applicants: 12,
+    rate: "₹999/-",
+    rateUnit: "per hour",
+  },
+  {
+    id: "4",
+    title: "Commentator Needed",
+    role: "Commentator",
+    venue: "Pune Badminton Hall",
+    manager: "Rohan Joshi (Manager)",
+    location: "Kothrud, Pune",
+    sport: "Badminton",
+    date: "25 Oct",
+    applicants: 3,
+    rate: "₹1,500/-",
+    rateUnit: "per hour",
+  },
+  {
+    id: "5",
+    title: "Scorer Needed",
+    role: "Scorer",
+    venue: "NCA Ground",
+    manager: "Priya Singh (Manager)",
+    location: "Bandra, Mumbai",
+    sport: "Cricket",
+    date: "28 Oct",
+    applicants: 7,
+    rate: "₹699/-",
     rateUnit: "per hour",
   },
 ];
@@ -61,31 +90,152 @@ const SAMPLE_JOBS = [
 const ROLE_OPTIONS = ["All", "Referee", "Coach", "Cameraman", "Commentator", "Scorer"];
 const SPORT_OPTIONS = ["All", "Cricket", "Football", "Badminton", "Basketboll"];
 
+const APPLICATION_STATS = [
+  { label: "Total", value: "24" },
+  { label: "Pending", value: "12" },
+  { label: "Accepted", value: "08" },
+  { label: "Rejected", value: "04" },
+];
+
+const APPLICATIONS = [
+  {
+    id: "a1",
+    title: "Referee Needed",
+    venue: "Andheri Sports Complex",
+    appliedOn: "5 May",
+    rate: "₹799/-",
+    rateUnit: "per hour",
+    status: "Shortlist",
+  },
+  {
+    id: "a2",
+    title: "Referee Needed",
+    venue: "Andheri Sports Complex",
+    appliedOn: "5 May",
+    rate: "₹799/-",
+    rateUnit: "per hour",
+    status: "Pending",
+  },
+  {
+    id: "a3",
+    title: "Referee Needed",
+    venue: "Andheri Sports Complex",
+    appliedOn: "5 May",
+    rate: "₹799/-",
+    rateUnit: "per hour",
+    status: "Accepted",
+  },
+  {
+    id: "a4",
+    title: "Referee Needed",
+    venue: "Andheri Sports Complex",
+    appliedOn: "5 May",
+    rate: "₹799/-",
+    rateUnit: "per hour",
+    status: "Rejected",
+  },
+];
+
+const STATUS_STYLES = {
+  Shortlist: { bg: "#E0EBFF", text: "#2563EB" },
+  Pending: { bg: "#FFF4D1", text: "#C68B00" },
+  Accepted: { bg: "#D7F4E1", text: "#1A8E4A" },
+  Rejected: { bg: "#FFE2E2", text: "#D7263D" },
+};
+
+const SUB_TABS = [
+  { key: "applications", label: "Applications", icon: "document-text-outline" },
+  { key: "requests", label: "Requests", icon: "mail-outline", dot: true },
+  { key: "myProfile", label: "My Profile", icon: "person-outline" },
+];
+
+const REQUESTS = [
+  {
+    id: "r1",
+    title: "Birthday Cricket Match",
+    fromName: "Rahul Sharma",
+    role: "Referee",
+    location: "Andheri Sports Complex",
+    date: "15 May 2026",
+    rate: "₹1,500/-",
+    isNew: true,
+  },
+  {
+    id: "r2",
+    title: "Football Tournament",
+    fromName: "Elite Sports Club",
+    role: "Commentator",
+    location: "Powai Ground",
+    date: "20 May 2026",
+    rate: "₹2,000/-",
+    isNew: true,
+  },
+];
+
 const BrowseJobs = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState("browse");
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState(["Referee", "Referee", "Referee"]);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState(["All", "Referee", "Coach", "Cameraman"]);
-  const [selectedSports, setSelectedSports] = useState(["All", "Cricket", "Football", "Badminton", "Basketboll"]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedSports, setSelectedSports] = useState([]);
+  const [activeSubTab, setActiveSubTab] = useState("applications");
 
-  const removeFilter = (index) => {
-    setFilters((prev) => prev.filter((_, i) => i !== index));
-  };
+  const ROLE_VALUES = ROLE_OPTIONS.filter((r) => r !== "All");
+  const SPORT_VALUES = SPORT_OPTIONS.filter((s) => s !== "All");
 
-  const toggleRole = (role) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+  const toggleSelection = (option, list, allValues, setList) => {
+    if (option === "All") {
+      const allSelected = allValues.every((v) => list.includes(v));
+      setList(allSelected ? [] : allValues);
+      return;
+    }
+    setList((prev) =>
+      prev.includes(option) ? prev.filter((x) => x !== option) : [...prev, option]
     );
   };
 
-  const toggleSport = (sport) => {
-    setSelectedSports((prev) =>
-      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
-    );
+  const isOptionChecked = (option, list, allValues) => {
+    if (option === "All") return allValues.length > 0 && allValues.every((v) => list.includes(v));
+    return list.includes(option);
   };
+
+  const toggleRole = (role) => toggleSelection(role, selectedRoles, ROLE_VALUES, setSelectedRoles);
+  const toggleSport = (sport) => toggleSelection(sport, selectedSports, SPORT_VALUES, setSelectedSports);
+
+  const activeChips = [
+    ...selectedRoles.map((label) => ({ label, type: "role" })),
+    ...selectedSports.map((label) => ({ label, type: "sport" })),
+  ];
+
+  const removeChip = (chip) => {
+    if (chip.type === "role") {
+      setSelectedRoles((prev) => prev.filter((r) => r !== chip.label));
+    } else {
+      setSelectedSports((prev) => prev.filter((s) => s !== chip.label));
+    }
+  };
+
+  const filteredJobs = SAMPLE_JOBS.filter((job) => {
+    if (selectedRoles.length > 0 && !selectedRoles.includes(job.role)) return false;
+    if (selectedSports.length > 0 && !selectedSports.includes(job.sport)) return false;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const haystack = [
+        job.title,
+        job.role,
+        job.venue,
+        job.manager,
+        job.location,
+        job.sport,
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
 
   const renderCheckRow = (label, checked, onToggle) => (
     <TouchableOpacity
@@ -101,8 +251,98 @@ const BrowseJobs = () => {
     </TouchableOpacity>
   );
 
+  const renderRequestCard = (req) => (
+    <View key={req.id} style={styles.reqCard}>
+      <View style={styles.reqHeaderRow}>
+        <View style={{ flex: 1, paddingRight: 8 }}>
+          <Text style={styles.reqTitle}>{req.title}</Text>
+          <Text style={styles.reqFrom}>from {req.fromName}</Text>
+        </View>
+        {req.isNew && (
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>New</Text>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.reqMetaRow}>
+        <Ionicons name="briefcase-outline" size={18} color="#6F6F6F" />
+        <Text style={styles.reqMetaLabel}>Role: </Text>
+        <Text style={styles.reqMetaValue}>{req.role}</Text>
+      </View>
+      <View style={styles.reqMetaRow}>
+        <Ionicons name="location-outline" size={18} color="#6F6F6F" />
+        <Text style={styles.reqMetaValue}>{req.location}</Text>
+      </View>
+      <View style={styles.reqMetaRow}>
+        <Ionicons name="calendar-outline" size={18} color="#6F6F6F" />
+        <Text style={styles.reqMetaValue}>{req.date}</Text>
+      </View>
+
+      <Text style={styles.reqRate}>{req.rate}</Text>
+
+      <View style={styles.reqActions}>
+        <TouchableOpacity style={styles.rejectBtn} activeOpacity={0.8}>
+          <Ionicons name="close" size={22} color="#D7263D" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.acceptBtn} activeOpacity={0.9}>
+          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+          <Text style={styles.acceptBtnText}>Accept</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderApplicationCard = (app) => {
+    const status = STATUS_STYLES[app.status] || STATUS_STYLES.Pending;
+    return (
+      <View key={app.id} style={styles.appCard}>
+        <View style={styles.appTopRow}>
+          <View style={styles.appLogoWrap}>
+            <Image
+              source={require("../../../assets/cricket-avatar.jpg")}
+              style={styles.appLogo}
+            />
+          </View>
+          <View style={{ flex: 1, paddingRight: 8 }}>
+            <Text style={styles.appTitle}>{app.title}</Text>
+            <Text style={styles.appVenue} numberOfLines={1}>
+              {app.venue}
+            </Text>
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
+            <Text style={[styles.statusBadgeText, { color: status.text }]}>{app.status}</Text>
+          </View>
+        </View>
+
+        <View style={styles.appDivider} />
+
+        <View style={styles.appBottomRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.appAppliedOn}>Applied on {app.appliedOn}</Text>
+            <View style={styles.appRateRow}>
+              <Text style={styles.appRate}>{app.rate} </Text>
+              <Text style={styles.appRateUnit}>{app.rateUnit}</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate("JobDetails", { jobId: app.id, status: app.status })}
+          >
+            <Text style={styles.viewDetailsLink}>View Details</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   const renderJobCard = (job) => (
-    <View key={job.id} style={styles.jobCard}>
+    <TouchableOpacity
+      key={job.id}
+      style={styles.jobCard}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate("JobDetails", { jobId: job.id })}
+    >
       <View style={styles.jobLogoWrap}>
         <Image
           source={require("../../../assets/cricket-avatar.jpg")}
@@ -143,7 +383,7 @@ const BrowseJobs = () => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -182,6 +422,97 @@ const BrowseJobs = () => {
         </View>
       </View>
 
+      {activeTab === "application" ? (
+        <View style={{ flex: 1 }}>
+          {/* Sub-tabs */}
+          <View style={styles.subTabsRow}>
+            {SUB_TABS.map((t) => {
+              const active = activeSubTab === t.key;
+              return (
+                <TouchableOpacity
+                  key={t.key}
+                  style={styles.subTab}
+                  activeOpacity={0.8}
+                  onPress={() => setActiveSubTab(t.key)}
+                >
+                  <View style={styles.subTabInner}>
+                    <View style={styles.subTabIconWrap}>
+                      <Ionicons
+                        name={t.icon}
+                        size={16}
+                        color={active ? "#15A765" : "#7A7A7A"}
+                      />
+                      {t.dot && <View style={styles.subTabDot} />}
+                    </View>
+                    <Text
+                      style={[styles.subTabText, active && styles.subTabTextActive]}
+                      numberOfLines={1}
+                    >
+                      {t.label}
+                    </Text>
+                  </View>
+                  {active && <View style={styles.subTabUnderline} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <View style={styles.subTabsDivider} />
+
+          <ScrollView
+            style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+            contentContainerStyle={{ paddingBottom: 30 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {activeSubTab === "applications" && (
+              <>
+                {/* Stats row */}
+                <View style={styles.statsBg}>
+                  <View style={styles.statsRow}>
+                    {APPLICATION_STATS.map((s) => (
+                      <View key={s.label} style={styles.statBox}>
+                        <Text style={styles.statValue}>{s.value}</Text>
+                        <Text style={styles.statLabel}>{s.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Application cards */}
+                <View style={styles.appList}>
+                  {APPLICATIONS.map(renderApplicationCard)}
+                </View>
+              </>
+            )}
+
+            {activeSubTab === "requests" && (
+              <View style={{ paddingHorizontal: 16, paddingTop: 14 }}>
+                {/* Info banner */}
+                <View style={styles.infoBanner}>
+                  <Ionicons name="mail-outline" size={22} color="#1E88F5" style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.infoTitle}>Personal Hiring Request</Text>
+                    <Text style={styles.infoMessage}>
+                      Players and organizers can directly request your services for their events
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Request cards */}
+                <View style={{ marginTop: 14, gap: 14 }}>
+                  {REQUESTS.map(renderRequestCard)}
+                </View>
+              </View>
+            )}
+
+            {activeSubTab === "myProfile" && (
+              <View style={styles.subTabEmpty}>
+                <Ionicons name="person-circle-outline" size={48} color="#CCCCCC" />
+                <Text style={styles.subTabEmptyText}>My Profile coming soon</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      ) : (
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{ paddingBottom: 30 }}
@@ -247,22 +578,35 @@ const BrowseJobs = () => {
         </View>
 
         {/* Filter chips */}
-        <View style={styles.chipsRow}>
-          {filters.map((f, idx) => (
-            <View key={`${f}-${idx}`} style={styles.chip}>
-              <Text style={styles.chipText}>{f}</Text>
-              <TouchableOpacity onPress={() => removeFilter(idx)} hitSlop={8}>
-                <Ionicons name="close" size={14} color="#1A8E4A" />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+        {activeChips.length > 0 && (
+          <View style={styles.chipsRow}>
+            {activeChips.map((chip) => (
+              <View key={`${chip.type}-${chip.label}`} style={styles.chip}>
+                <Text style={styles.chipText}>{chip.label}</Text>
+                <TouchableOpacity onPress={() => removeChip(chip)} hitSlop={8}>
+                  <Ionicons name="close" size={14} color="#1A8E4A" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Job Listings */}
         <View style={styles.jobsList}>
-          {SAMPLE_JOBS.map(renderJobCard)}
+          {filteredJobs.length > 0 ? (
+            filteredJobs.map(renderJobCard)
+          ) : (
+            <View style={styles.emptyResults}>
+              <Ionicons name="search-outline" size={40} color="#CCCCCC" />
+              <Text style={styles.emptyResultsTitle}>No opportunities found</Text>
+              <Text style={styles.emptyResultsHint}>
+                Try a different search or clear the filters
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
+      )}
 
       {/* Filter Bottom Sheet */}
       <Modal
@@ -297,14 +641,22 @@ const BrowseJobs = () => {
 
               <Text style={styles.sheetSection}>Role</Text>
               {ROLE_OPTIONS.map((role) =>
-                renderCheckRow(role, selectedRoles.includes(role), () => toggleRole(role))
+                renderCheckRow(
+                  role,
+                  isOptionChecked(role, selectedRoles, ROLE_VALUES),
+                  () => toggleRole(role)
+                )
               )}
 
               <View style={styles.sheetDivider} />
 
               <Text style={styles.sheetSection}>Sports</Text>
               {SPORT_OPTIONS.map((sport) =>
-                renderCheckRow(sport, selectedSports.includes(sport), () => toggleSport(sport))
+                renderCheckRow(
+                  sport,
+                  isOptionChecked(sport, selectedSports, SPORT_VALUES),
+                  () => toggleSport(sport)
+                )
               )}
             </ScrollView>
           </View>
@@ -697,6 +1049,312 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
     color: "#1F1F1F",
+  },
+  // Application tab
+  subTabsRow: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+  },
+  subTab: {
+    flex: 1,
+    paddingTop: 6,
+  },
+  subTabInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    gap: 6,
+  },
+  subTabIconWrap: {
+    position: "relative",
+  },
+  subTabDot: {
+    position: "absolute",
+    top: -2,
+    right: -3,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#E53935",
+  },
+  subTabText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#7A7A7A",
+  },
+  subTabTextActive: {
+    color: "#15A765",
+  },
+  subTabUnderline: {
+    height: 2,
+    backgroundColor: "#15A765",
+    borderRadius: 2,
+    marginHorizontal: 4,
+  },
+  subTabsDivider: {
+    height: 1,
+    backgroundColor: "#EFEFEF",
+  },
+  statsBg: {
+    backgroundColor: "#F4F5F7",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+  },
+  statValue: {
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  statLabel: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#6F6F6F",
+    marginTop: 4,
+  },
+  appList: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 12,
+  },
+  appCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  appTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  appLogoWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#F5F5F5",
+    marginRight: 12,
+  },
+  appLogo: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  appTitle: {
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  appVenue: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  appDivider: {
+    height: 1,
+    backgroundColor: "#F0F0F0",
+    marginVertical: 10,
+  },
+  appBottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  appAppliedOn: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#6F6F6F",
+  },
+  appRateRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginTop: 4,
+  },
+  appRate: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#15A765",
+  },
+  appRateUnit: {
+    fontSize: 11,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+  },
+  viewDetailsLink: {
+    fontSize: 13,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#1E88F5",
+    textDecorationLine: "underline",
+  },
+  // Requests sub-tab
+  infoBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#E8F2FE",
+    borderRadius: 12,
+    padding: 14,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1E88F5",
+    marginBottom: 4,
+  },
+  infoMessage: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#1E88F5",
+    lineHeight: 17,
+  },
+  reqCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+    padding: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  reqHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  reqTitle: {
+    fontSize: 16,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  reqFrom: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  newBadge: {
+    backgroundColor: "#E0EBFF",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  newBadgeText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#1E88F5",
+  },
+  reqMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  reqMetaLabel: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+    marginLeft: 8,
+  },
+  reqMetaValue: {
+    fontSize: 13,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginLeft: 6,
+    flexShrink: 1,
+  },
+  reqRate: {
+    fontSize: 16,
+    fontFamily: "Montserrat_700Bold",
+    color: "#15A765",
+    marginTop: 10,
+  },
+  reqActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 12,
+  },
+  rejectBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#D7263D",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  acceptBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  acceptBtnText: {
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    color: "#FFFFFF",
+  },
+  // Sub-tab empty state
+  subTabEmpty: {
+    paddingTop: 80,
+    alignItems: "center",
+  },
+  subTabEmptyText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#9A9A9A",
+    marginTop: 12,
+  },
+  emptyResults: {
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyResultsTitle: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#6F6F6F",
+    marginTop: 12,
+  },
+  emptyResultsHint: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#9A9A9A",
+    marginTop: 4,
   },
 });
 

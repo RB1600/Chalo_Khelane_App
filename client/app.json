@@ -45,7 +45,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.chalokhelnesport.client",
-      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -81,8 +80,7 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_MEDIA_AUDIO"
       ],
-      "package": "com.chalokhelnesport.client",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.chalokhelnesport.client"
     },
     "web": {
       "favicon": "./assets/favicon.png"
