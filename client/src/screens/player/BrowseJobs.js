@@ -156,6 +156,137 @@ const SUB_TABS = [
   { key: "myProfile", label: "My Profile", icon: "person-outline" },
 ];
 
+const PROFILE_STATS = [
+  { key: "earnings", label: "Total Earnings", value: "₹1,25,000", sub: "All Time", valueColor: "#258C3F" },
+  { key: "month", label: "This Month", value: "₹1,25,000", sub: "↗ 25% from last month", valueColor: "#258C3F" },
+  { key: "rating", label: "Rating", value: "4.8", sub: "42 Reviews", isRating: true },
+  { key: "jobs", label: "Total Jobs", value: "45", sub: "Completed" },
+];
+
+const PROFILE_JOBS = {
+  active: [
+    {
+      id: "pj1",
+      title: "Football Commentator",
+      event: "Corporate football tournament",
+      org: "Tech Crop Events",
+      location: "Andheri Sports Complex",
+      time: "08:00 AM - 02:00 PM",
+      date: "Monday, 15 May 2026",
+      rate: "₹2,500/-",
+      status: "Confirmed",
+    },
+    {
+      id: "pj2",
+      title: "Football Commentator",
+      event: "Corporate football tournament",
+      org: "Tech Crop Events",
+      location: "Andheri Sports Complex",
+      time: "08:00 AM - 02:00 PM",
+      date: "Monday, 15 May 2026",
+      rate: "₹4,000/-",
+      status: "Confirmed",
+    },
+    {
+      id: "pj3",
+      title: "Football Commentator",
+      event: "Corporate football tournament",
+      org: "Tech Crop Events",
+      location: "Andheri Sports Complex",
+      time: "08:00 AM - 02:00 PM",
+      date: "Monday, 15 May 2026",
+      rate: "₹3,000/-",
+      status: "In Progress",
+    },
+  ],
+  upcoming: [
+    {
+      id: "up1",
+      title: "Cricket Referee",
+      event: "Weekend Tournament",
+      org: "Local Sports Club",
+      location: "Marine Drive",
+      date: "Monday, 25 May 2026",
+      rate: "₹2,000/-",
+      timeLabel: "2 Day left",
+    },
+    {
+      id: "up2",
+      title: "Cricket Commentator",
+      event: "University Championships",
+      org: "Mumbai University",
+      location: "Andheri Sports Complex",
+      date: "Monday, 15 May 2026",
+      rate: "₹3,500/-",
+      timeLabel: "2 h ago",
+    },
+    {
+      id: "up3",
+      title: "Football Referee",
+      event: "Inter-College Cup",
+      org: "Sports Federation",
+      location: "Powai Ground",
+      date: "Friday, 30 May 2026",
+      rate: "₹2,500/-",
+      timeLabel: "5 Day left",
+    },
+    {
+      id: "up4",
+      title: "Badminton Scorer",
+      event: "City Championship",
+      org: "Pune Sports Club",
+      location: "Kothrud Badminton Hall",
+      date: "Sunday, 1 June 2026",
+      rate: "₹1,200/-",
+      timeLabel: "7 Day left",
+    },
+    {
+      id: "up5",
+      title: "Basketball Commentator",
+      event: "Corporate League",
+      org: "Tech Crop Events",
+      location: "DY Patil Stadium",
+      date: "Saturday, 7 June 2026",
+      rate: "₹2,800/-",
+      timeLabel: "13 Day left",
+    },
+  ],
+  completed: [
+    {
+      id: "cp1",
+      title: "Cricket Referee",
+      event: "State Level Tournament",
+      org: "Maharashtra Cricket Association",
+      completedOn: "25 May 2026",
+      earned: "₹3,000/-",
+      rating: 5.0,
+      review: "Excellent referee! Very professional and punctual.",
+    },
+    {
+      id: "cp2",
+      title: "Event Cameraman",
+      event: "Corporate Match",
+      org: "XYZ Company",
+      completedOn: "1 May 2026",
+      earned: "₹2,500/-",
+      rating: 4.0,
+      review: "Good quality footage",
+    },
+  ],
+};
+
+const PROFILE_JOB_TABS = [
+  { key: "active", label: "Active", count: "03" },
+  { key: "upcoming", label: "Upcoming", count: "05" },
+  { key: "completed", label: "Completed", count: "10" },
+];
+
+const JOB_STATUS_STYLES = {
+  Confirmed: { bg: "#DBEAFE", text: "#1447E6", icon: "checkmark-circle-outline" },
+  "In Progress": { bg: "#FFEFD5", text: "#D97706", icon: "time-outline" },
+  Completed: { bg: "#D7F4E1", text: "#1A8E4A", icon: "checkmark-done-outline" },
+};
+
 const REQUESTS = [
   {
     id: "r1",
@@ -188,6 +319,8 @@ const BrowseJobs = () => {
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [selectedSports, setSelectedSports] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("applications");
+  const [profileTab, setProfileTab] = useState("dashboard");
+  const [profileJobTab, setProfileJobTab] = useState("active");
 
   const ROLE_VALUES = ROLE_OPTIONS.filter((r) => r !== "All");
   const SPORT_VALUES = SPORT_OPTIONS.filter((s) => s !== "All");
@@ -341,7 +474,15 @@ const BrowseJobs = () => {
           </View>
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => navigation.navigate("JobDetails", { jobId: app.id, status: app.status })}
+            onPress={() =>
+              navigation.navigate("JobDetails", {
+                jobId: app.id,
+                status: app.status,
+                title: app.title,
+                subtitle: app.venue,
+                rate: app.rate,
+              })
+            }
           >
             <Text style={styles.viewDetailsLink}>View Details</Text>
           </TouchableOpacity>
@@ -355,7 +496,14 @@ const BrowseJobs = () => {
       key={job.id}
       style={styles.jobCard}
       activeOpacity={0.85}
-      onPress={() => navigation.navigate("JobDetails", { jobId: job.id })}
+      onPress={() =>
+        navigation.navigate("JobDetails", {
+          jobId: job.id,
+          title: job.title,
+          subtitle: job.venue,
+          rate: job.rate,
+        })
+      }
     >
       <View style={styles.jobTopRow}>
         <View style={styles.jobLogoWrap}>
@@ -532,32 +680,291 @@ const BrowseJobs = () => {
             )}
 
             {activeSubTab === "myProfile" && (
-              <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: "#155DFC",
-                    borderRadius: 10,
-                    height: 56,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 12,
-                    width: "100%",
-                  }}
-                  activeOpacity={0.9}
-                  onPress={() => navigation.navigate("CreateProfessionalProfile")}
-                >
-                  <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                  <Text
-                    style={{
-                      color: "#FFFFFF",
-                      fontSize: 16,
-                      fontFamily: "Poppins_500Medium",
-                    }}
-                  >
-                    Create New Professional Profile
-                  </Text>
-                </TouchableOpacity>
+              <View style={{ flex: 1 }}>
+                {/* Dashboard / Profile toggle */}
+                <View style={styles.dashToggleWrap}>
+                  <View style={styles.dashToggle}>
+                    <TouchableOpacity
+                      style={[
+                        styles.dashToggleBtn,
+                        profileTab === "dashboard" && styles.dashToggleBtnActive,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => setProfileTab("dashboard")}
+                    >
+                      <Text
+                        style={[
+                          styles.dashToggleText,
+                          profileTab === "dashboard" && styles.dashToggleTextActive,
+                        ]}
+                      >
+                        Dashboard
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.dashToggleBtn,
+                        profileTab === "profile" && styles.dashToggleBtnActive,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => setProfileTab("profile")}
+                    >
+                      <Text
+                        style={[
+                          styles.dashToggleText,
+                          profileTab === "profile" && styles.dashToggleTextActive,
+                        ]}
+                      >
+                        Profile
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {profileTab === "dashboard" ? (
+                  <>
+                    {/* Stats grid 2x2 */}
+                    <View style={styles.profileStatsWrap}>
+                      <View style={styles.profileStatsGrid}>
+                        {PROFILE_STATS.map((s) => (
+                          <View key={s.key} style={styles.profileStatCard}>
+                            <Text style={styles.profileStatLabel}>{s.label}</Text>
+                            <View style={styles.profileStatValueRow}>
+                              {s.isRating && (
+                                <Ionicons
+                                  name="star"
+                                  size={18}
+                                  color="#F5B400"
+                                  style={{ marginRight: 4 }}
+                                />
+                              )}
+                              <Text
+                                style={[
+                                  styles.profileStatValue,
+                                  s.valueColor && { color: s.valueColor },
+                                ]}
+                              >
+                                {s.value}
+                              </Text>
+                            </View>
+                            <Text style={styles.profileStatSub}>{s.sub}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+
+                    {/* Job tabs */}
+                    <View style={styles.jobTabsRow}>
+                      {PROFILE_JOB_TABS.map((t) => {
+                        const active = profileJobTab === t.key;
+                        return (
+                          <TouchableOpacity
+                            key={t.key}
+                            style={styles.jobTab}
+                            activeOpacity={0.8}
+                            onPress={() => setProfileJobTab(t.key)}
+                          >
+                            <Text
+                              style={[
+                                styles.jobTabText,
+                                active && styles.jobTabTextActive,
+                              ]}
+                            >
+                              {t.label} ({t.count})
+                            </Text>
+                            {active && <View style={styles.jobTabUnderline} />}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    <View style={styles.subTabsDivider} />
+
+                    {/* Job cards */}
+                    <View style={styles.profileJobsList}>
+                      {(PROFILE_JOBS[profileJobTab] || []).length === 0 ? (
+                        <View style={styles.subTabEmpty}>
+                          <Ionicons name="briefcase-outline" size={40} color="#CCCCCC" />
+                          <Text style={styles.subTabEmptyText}>No {profileJobTab} jobs</Text>
+                        </View>
+                      ) : (
+                        (PROFILE_JOBS[profileJobTab] || []).map((job) => {
+                          const isUpcoming = profileJobTab === "upcoming";
+                          const isCompleted = profileJobTab === "completed";
+                          const sStyle = JOB_STATUS_STYLES[job.status] || JOB_STATUS_STYLES.Confirmed;
+
+                          if (isCompleted) {
+                            return (
+                              <TouchableOpacity
+                                key={job.id}
+                                style={styles.profileJobCard}
+                                activeOpacity={0.9}
+                                onPress={() =>
+                                  navigation.navigate("JobDetails", {
+                                    jobId: job.id,
+                                    status: "Completed",
+                                    title: job.title,
+                                    subtitle: job.event,
+                                    org: job.org,
+                                    rate: job.earned,
+                                  })
+                                }
+                              >
+                                <View style={styles.profileJobTopRow}>
+                                  <View style={{ flex: 1, paddingRight: 8 }}>
+                                    <View style={styles.completedTitleRow}>
+                                      <Text style={styles.profileJobTitle}>{job.title}</Text>
+                                      <Ionicons
+                                        name="checkmark-circle"
+                                        size={18}
+                                        color="#15A765"
+                                        style={{ marginLeft: 6 }}
+                                      />
+                                    </View>
+                                    <Text style={styles.profileJobEvent}>{job.event}</Text>
+                                    <Text style={styles.profileJobOrg}>{job.org}</Text>
+                                  </View>
+                                  <View style={{ alignItems: "flex-end" }}>
+                                    <Text style={styles.completedRate}>{job.earned}</Text>
+                                    <Text style={styles.completedEarnedLabel}>Earned</Text>
+                                  </View>
+                                </View>
+
+                                <View style={styles.profileJobMetaRow}>
+                                  <Ionicons name="calendar-outline" size={16} color="#6F6F6F" />
+                                  <Text style={styles.profileJobMetaText}>
+                                    Completed: {job.completedOn}
+                                  </Text>
+                                </View>
+
+                                <View style={styles.completedRatingRow}>
+                                  <Ionicons name="star" size={16} color="#F5B400" />
+                                  <Text style={styles.completedRatingText}>{job.rating.toFixed(1)}</Text>
+                                </View>
+
+                                {job.review && (
+                                  <View style={styles.completedReviewWrap}>
+                                    <Text style={styles.completedReviewText}>"{job.review}"</Text>
+                                  </View>
+                                )}
+                              </TouchableOpacity>
+                            );
+                          }
+
+                          return (
+                            <View key={job.id} style={styles.profileJobCard}>
+                              <View style={styles.profileJobTopRow}>
+                                <View style={{ flex: 1, paddingRight: 8 }}>
+                                  <Text style={styles.profileJobTitle}>{job.title}</Text>
+                                  <Text style={styles.profileJobEvent}>{job.event}</Text>
+                                  <Text style={styles.profileJobOrg}>{job.org}</Text>
+                                </View>
+                                {isUpcoming ? (
+                                  <Text style={styles.timeLeftText}>{job.timeLabel}</Text>
+                                ) : (
+                                  <View style={[styles.profileStatusBadge, { backgroundColor: sStyle.bg }]}>
+                                    <Ionicons name={sStyle.icon} size={12} color={sStyle.text} />
+                                    <Text style={[styles.profileStatusText, { color: sStyle.text }]}>
+                                      {job.status}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+
+                              <View style={styles.profileJobMeta}>
+                                <View style={styles.profileJobMetaRow}>
+                                  <Ionicons name="location-outline" size={16} color="#6F6F6F" />
+                                  <Text style={styles.profileJobMetaText}>{job.location}</Text>
+                                </View>
+                                {!isUpcoming && (
+                                  <View style={styles.profileJobMetaRow}>
+                                    <Ionicons name="time-outline" size={16} color="#6F6F6F" />
+                                    <Text style={styles.profileJobMetaText}>{job.time}</Text>
+                                  </View>
+                                )}
+                                <View style={styles.profileJobMetaRow}>
+                                  <Ionicons name="calendar-outline" size={16} color="#6F6F6F" />
+                                  <Text style={styles.profileJobMetaText}>{job.date}</Text>
+                                </View>
+                              </View>
+
+                              <Text style={styles.profileJobRate}>{job.rate}</Text>
+
+                              {isUpcoming ? (
+                                <TouchableOpacity
+                                  style={styles.upcomingDetailsBtn}
+                                  activeOpacity={0.85}
+                                  onPress={() =>
+                                    navigation.navigate("JobDetails", {
+                                      jobId: job.id,
+                                      status: "Upcoming",
+                                      timeLabel: job.timeLabel,
+                                      title: job.title,
+                                      subtitle: job.event,
+                                      org: job.org,
+                                      rate: job.rate,
+                                    })
+                                  }
+                                >
+                                  <Text style={styles.upcomingDetailsBtnText}>View Details</Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <View style={styles.profileJobActions}>
+                                  <TouchableOpacity
+                                    style={styles.viewDetailsBtn}
+                                    activeOpacity={0.85}
+                                    onPress={() =>
+                                      navigation.navigate("JobDetails", {
+                                        jobId: job.id,
+                                        status: job.status,
+                                        title: job.title,
+                                        subtitle: job.event,
+                                        org: job.org,
+                                        rate: job.rate,
+                                      })
+                                    }
+                                  >
+                                    <Text style={styles.viewDetailsBtnText}>View Details</Text>
+                                  </TouchableOpacity>
+                                  <TouchableOpacity style={styles.chatBtn} activeOpacity={0.9}>
+                                    <Text style={styles.chatBtnText}>Chat Organizer</Text>
+                                  </TouchableOpacity>
+                                </View>
+                              )}
+                            </View>
+                          );
+                        })
+                      )}
+                    </View>
+                  </>
+                ) : (
+                  <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#155DFC",
+                        borderRadius: 10,
+                        height: 56,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 12,
+                        width: "100%",
+                      }}
+                      activeOpacity={0.9}
+                      onPress={() => navigation.navigate("CreateProfessionalProfile")}
+                    >
+                      <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+                      <Text
+                        style={{
+                          color: "#FFFFFF",
+                          fontSize: 16,
+                          fontFamily: "Poppins_500Medium",
+                        }}
+                      >
+                        Create New Professional Profile
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             )}
           </ScrollView>
@@ -1441,6 +1848,263 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     color: "#9A9A9A",
     marginTop: 4,
+  },
+  // My Profile - Dashboard
+  dashToggleWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 14,
+    backgroundColor: "#FFFFFF",
+  },
+  dashToggle: {
+    flexDirection: "row",
+    backgroundColor: "#F7F7F7",
+    borderRadius: 73,
+    padding: 4,
+    borderColor: "#F0F0F0",
+    borderWidth: 1,
+  },
+  dashToggleBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 30,
+  },
+  dashToggleBtnActive: {
+    backgroundColor: "#15A765",
+  },
+  dashToggleText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+    color: "#333333",
+  },
+  dashToggleTextActive: {
+    color: "#FFFFFF",
+  },
+  profileStatsWrap: {
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  profileStatsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  profileStatCard: {
+    width: "48.5%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#EEF1FA",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  profileStatLabel: {
+    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    color: "#1F1F1F",
+    marginBottom: 6,
+  },
+  profileStatValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  profileStatValue: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  profileStatSub: {
+    fontSize: 11,
+    fontFamily: "Montserrat_400Regular",
+    color: "#6F6F6F",
+  },
+  jobTabsRow: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 22,
+  },
+  jobTab: {
+    paddingBottom: 0,
+  },
+  jobTabText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#6F6F6F",
+    paddingVertical: 10,
+  },
+  jobTabTextActive: {
+    color: "#15A765",
+  },
+  jobTabUnderline: {
+    height: 3,
+    backgroundColor: "#15A765",
+    borderRadius: 2,
+  },
+  profileJobsList: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    gap: 14,
+  },
+  profileJobCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EEEEFF",
+    padding: 16,
+    shadowColor: "#8B96BA",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 3,
+  },
+  profileJobTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  profileJobTitle: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#0A0A0A",
+  },
+  profileJobEvent: {
+    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
+    marginTop: 4,
+  },
+  profileJobOrg: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#7A7A7A",
+    marginTop: 2,
+  },
+  profileStatusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  profileStatusText: {
+    fontSize: 11,
+    fontFamily: "Poppins_500Medium",
+  },
+  profileJobMeta: {
+    marginTop: 12,
+    gap: 6,
+  },
+  profileJobMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  profileJobMetaText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
+  },
+  profileJobRate: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#258C3F",
+    marginTop: 12,
+  },
+  profileJobActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
+  },
+  viewDetailsBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#F2F4F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  viewDetailsBtnText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#15A765",
+  },
+  chatBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chatBtnText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#FFFFFF",
+  },
+  timeLeftText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#7A7A7A",
+  },
+  upcomingDetailsBtn: {
+    marginTop: 14,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#15A765",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  upcomingDetailsBtnText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#15A765",
+  },
+  // Completed job card
+  completedTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  completedRate: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#258C3F",
+  },
+  completedEarnedLabel: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#7A7A7A",
+    marginTop: 2,
+  },
+  completedRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+  },
+  completedRatingText: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+  },
+  completedReviewWrap: {
+    backgroundColor: "#F4F5F7",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 12,
+  },
+  completedReviewText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    fontStyle: "italic",
+    color: "#4A4A4A",
   },
 });
 

@@ -1,13 +1,15 @@
 // config/api.js — Central API configuration
+//
+// Single source of truth lives in src/config/env.js (ACTIVE_ENV switch).
+// This file just re-exports those URLs so the legacy code that reads from
+// here stays in sync with the rest of the app and never gets a stale LAN IP.
 
-// ── Server Configuration ──
-// Toggle this ONE line for dev vs production:
-// const Wbsite_SERVER_URL = "https://chalokhelne.com";              // production
-const Wbsite_SERVER_URL = "http://192.168.1.68:3003";          // local development
+import { SERVER_URL as ENV_SERVER_URL, BASE_URL as ENV_BASE_URL, UPLOADS_URL as ENV_UPLOADS_URL } from "../config/env";
 
-const SERVER_URL = Wbsite_SERVER_URL;
-const BASE_URL = `${SERVER_URL}/api`;
-const UPLOADS_URL = `${SERVER_URL}/uploads`;
+const Wbsite_SERVER_URL = ENV_SERVER_URL;
+const SERVER_URL = ENV_SERVER_URL;
+const BASE_URL = ENV_BASE_URL;
+const UPLOADS_URL = ENV_UPLOADS_URL;
 
 // API endpoints based on your existing routes
 const ENDPOINTS = {

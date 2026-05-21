@@ -74,6 +74,27 @@ const STATUS_BANNERS = {
     title: "Rejected",
     message: "Unfortunately, your application was not selected this time.",
   },
+  Confirmed: {
+    bg: "#DBEAFE",
+    title: "Confirmed",
+    message: "Your booking is confirmed. Get ready for the match!",
+  },
+  "In Progress": {
+    bg: "#FFEFD5",
+    title: "In Progress",
+    message: "This job is currently in progress. Good luck out there!",
+  },
+  Upcoming: {
+    bg: "#D7F4E1",
+    title: "Upcoming",
+    // {timeLabel} placeholder is replaced at render time with the route param
+    message: "Your match is coming up — {timeLabel}. Be prepared and arrive on time.",
+  },
+  Completed: {
+    bg: "#D7F4E1",
+    title: "Completed",
+    message: "This job has been completed. Thanks for the great work!",
+  },
 };
 
 const JobDetails = () => {
@@ -83,7 +104,15 @@ const JobDetails = () => {
   const [bookmarked, setBookmarked] = useState(false);
 
   const status = route.params?.status;
-  const banner = status ? STATUS_BANNERS[status] : null;
+  const timeLabel = route.params?.timeLabel;
+  const jobTitleParam = route.params?.title || "Referee Needed";
+  const jobSubtitleParam = route.params?.subtitle || "Ionix Sports Club";
+  const jobOrgParam = route.params?.org;
+  const jobRateParam = route.params?.rate;
+  const rawBanner = status ? STATUS_BANNERS[status] : null;
+  const banner = rawBanner
+    ? { ...rawBanner, message: rawBanner.message.replace("{timeLabel}", timeLabel || "soon") }
+    : null;
   const alreadyApplied = !!status;
   const [applyOpen, setApplyOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState("p1");
@@ -191,12 +220,12 @@ const JobDetails = () => {
           </View>
           <View style={{ flex: 1, paddingRight: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
-              <Text style={styles.jobTitle}>Referee Needed</Text>
+              <Text style={styles.jobTitle}>{jobTitleParam}</Text>
               <View style={[styles.sportBadge, { marginLeft: 50, marginRight: 0 }]}>
                 <Text style={styles.sportBadgeText}>Cricket</Text>
               </View>
             </View>
-            <Text style={styles.jobSubtitle}>Ionix Sports Club</Text>
+            <Text style={styles.jobSubtitle}>{jobSubtitleParam}</Text>
           </View>
         </View>
 
@@ -348,10 +377,10 @@ const JobDetails = () => {
                   />
                 </View>
                 <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={styles.applyJobTitle}>Referee Needed</Text>
-                  <Text style={styles.applyJobSubtitle}>Ionix Sports Club</Text>
+                  <Text style={styles.applyJobTitle}>{jobTitleParam}</Text>
+                  <Text style={styles.applyJobSubtitle}>{jobSubtitleParam}</Text>
                 </View>
-                <Text style={styles.applyJobRate}>₹7,500 /-</Text>
+                <Text style={styles.applyJobRate}>{jobRateParam || "₹7,500 /-"}</Text>
               </View>
 
               <Text style={styles.applySectionHeading}>Select professional Profile</Text>
