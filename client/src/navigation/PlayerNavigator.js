@@ -72,6 +72,12 @@ import TournamentHistory from "../screens/player/TournamentHistory";
 import Planner from "../screens/player/Planner";
 import AddNote from "../screens/player/AddNote";
 import DaySchedule from "../screens/player/DaySchedule";
+import EquipmentStore from "../screens/player/EquipmentStore";
+import Checkout from "../screens/player/Checkout";
+import PaymentMethod from "../screens/player/PaymentMethod";
+import OrderConfirmed from "../screens/player/OrderConfirmed";
+import OrderTracking from "../screens/player/OrderTracking";
+import OrderDelivered from "../screens/player/OrderDelivered";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -470,7 +476,37 @@ const ChatStack = () => {
 // Profile stack navigator for Player
 const ProfileStack = () => {
   return (
-    <Stack.Navigator initialRouteName="Player Profile">
+    <Stack.Navigator initialRouteName="EquipmentStore">
+      <Stack.Screen
+        name="EquipmentStore"
+        component={EquipmentStore}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Checkout"
+        component={Checkout}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
+      />
+      <Stack.Screen
+        name="PaymentMethod"
+        component={PaymentMethod}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
+      />
+      <Stack.Screen
+        name="OrderConfirmed"
+        component={OrderConfirmed}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
+      />
+      <Stack.Screen
+        name="OrderTracking"
+        component={OrderTracking}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
+      />
+      <Stack.Screen
+        name="OrderDelivered"
+        component={OrderDelivered}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
+      />
       <Stack.Screen
         name="Player Profile"
         component={Profile}
@@ -621,6 +657,7 @@ const CustomTabBar = ({ state, descriptors, navigation, insets }) => {
     "SocialHome",
     "ChatList",
     "Player Profile",
+    "EquipmentStore",
     undefined // When it's the initial route of the stack
   ];
 
@@ -655,8 +692,10 @@ const CustomTabBar = ({ state, descriptors, navigation, insets }) => {
           } else if (route.name === "Chat") {
             iconName = isFocused ? "chatbubbles" : "chatbubbles-outline";
           } else if (route.name === "Profile") {
-            iconName = isFocused ? "person" : "person-outline";
+            iconName = isFocused ? "storefront" : "storefront-outline";
           }
+
+          const label = route.name === "Profile" ? "Store" : route.name;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -683,7 +722,7 @@ const CustomTabBar = ({ state, descriptors, navigation, insets }) => {
                 navigation.navigate("Chat", { screen: "ChatList" });
                 break;
               case "Profile":
-                navigation.navigate("Profile", { screen: "Player Profile" });
+                navigation.navigate("Profile", { screen: "EquipmentStore" });
                 break;
               default:
                 navigation.navigate(route.name);
@@ -716,7 +755,7 @@ const CustomTabBar = ({ state, descriptors, navigation, insets }) => {
                 <Text
                   style={[styles.label, isFocused ? styles.activeLabel : null]}
                 >
-                  {route.name}
+                  {label}
                 </Text>
               </View>
             </TouchableOpacity>

@@ -310,6 +310,46 @@ const REQUESTS = [
   },
 ];
 
+const PROFILE_SPORT_FILTERS = [
+  { key: "All", label: "All" },
+  { key: "Cricket", label: "Cricket (02)" },
+  { key: "Football", label: "Football (03)" },
+  { key: "Badminton", label: "Badminton" },
+];
+
+const PROFESSIONAL_PROFILES = [
+  {
+    id: "p1",
+    role: "Commentator",
+    sport: "Cricket",
+    tier: "Professional",
+    rating: "4.9",
+    jobsDone: "32",
+    earned: "₹98,000",
+    active: false,
+  },
+  {
+    id: "p2",
+    role: "Referee",
+    sport: "Football",
+    tier: "Professional",
+    rating: "4.9",
+    jobsDone: "32",
+    earned: "₹98,000",
+    active: true,
+  },
+  {
+    id: "p3",
+    role: "Commentator",
+    sport: "Football",
+    tier: "Professional",
+    rating: "4.9",
+    jobsDone: "32",
+    earned: "₹98,000",
+    active: false,
+  },
+];
+
 const BrowseJobs = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -321,6 +361,18 @@ const BrowseJobs = () => {
   const [activeSubTab, setActiveSubTab] = useState("applications");
   const [profileTab, setProfileTab] = useState("dashboard");
   const [profileJobTab, setProfileJobTab] = useState("active");
+  const [profileSportFilter, setProfileSportFilter] = useState("All");
+  const [profilesActiveMap, setProfilesActiveMap] = useState(
+    PROFESSIONAL_PROFILES.reduce((acc, p) => ({ ...acc, [p.id]: p.active }), {})
+  );
+
+  const toggleProfileActive = (id) =>
+    setProfilesActiveMap((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const visibleProfiles =
+    profileSportFilter === "All"
+      ? PROFESSIONAL_PROFILES
+      : PROFESSIONAL_PROFILES.filter((p) => p.sport === profileSportFilter);
 
   const ROLE_VALUES = ROLE_OPTIONS.filter((r) => r !== "All");
   const SPORT_VALUES = SPORT_OPTIONS.filter((s) => s !== "All");
@@ -937,30 +989,139 @@ const BrowseJobs = () => {
                     </View>
                   </>
                 ) : (
-                  <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
+                  <View style={{ flex: 1 }}>
+                    {/* Sport filter chips */}
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.profSportRow}
+                    >
+                      {PROFILE_SPORT_FILTERS.map((f) => {
+                        const active = profileSportFilter === f.key;
+                        return (
+                          <TouchableOpacity
+                            key={f.key}
+                            style={[
+                              styles.profSportChip,
+                              active && styles.profSportChipActive,
+                            ]}
+                            activeOpacity={0.85}
+                            onPress={() => setProfileSportFilter(f.key)}
+                          >
+                            <Text
+                              style={[
+                                styles.profSportChipText,
+                                active && styles.profSportChipTextActive,
+                              ]}
+                            >
+                              {f.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+
+                    {/* Profile cards */}
+                    <View style={styles.profCardsList}>
+                      {visibleProfiles.map((p) => {
+                        const isActive = !!profilesActiveMap[p.id];
+                        return (
+                          <View key={p.id} style={styles.profCard}>
+                            <View style={styles.profCardHeader}>
+                              <View style={{ flex: 1, paddingRight: 10 }}>
+                                <Text style={styles.profCardTitle}>{p.role}</Text>
+                                <Text style={styles.profCardSubtitle}>
+                                  {p.sport} • {p.tier}
+                                </Text>
+                              </View>
+                              <TouchableOpacity
+                                style={styles.profEditBtn}
+                                activeOpacity={0.8}
+                              >
+                                <Feather name="edit-2" size={16} color="#6F6F6F" />
+                              </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.profStatsRow}>
+                              <View style={styles.profStatCol}>
+                                <Text style={styles.profStatValue}>{p.rating}</Text>
+                                <Text style={styles.profStatLabel}>Rating</Text>
+                              </View>
+                              <View style={styles.profStatCol}>
+                                <Text style={styles.profStatValue}>{p.jobsDone}</Text>
+                                <Text style={styles.profStatLabel}>Jobs Done</Text>
+                              </View>
+                              <View style={styles.profStatCol}>
+                                <Text
+                                  style={[styles.profStatValue, { color: "#15A765" }]}
+                                >
+                                  {p.earned}
+                                </Text>
+                                <Text style={styles.profStatLabel}>Earned</Text>
+                              </View>
+                            </View>
+
+                            <TouchableOpacity
+                              activeOpacity={0.9}
+                              onPress={() => toggleProfileActive(p.id)}
+                              style={[
+                                styles.profActionBtn,
+                                isActive && styles.profActionBtnActive,
+                              ]}
+                            >
+                              {!isActive && (
+                                <View style={styles.profActionIconDark}>
+                                  <Ionicons
+                                    name="chevron-forward"
+                                    size={14}
+                                    color="#FFFFFF"
+                                    style={{ marginRight: -6 }}
+                                  />
+                                  <Ionicons
+                                    name="chevron-forward"
+                                    size={14}
+                                    color="#FFFFFF"
+                                  />
+                                </View>
+                              )}
+                              <Text
+                                style={[
+                                  styles.profActionText,
+                                  isActive && styles.profActionTextActive,
+                                ]}
+                              >
+                                {isActive ? "Activate Profile" : "Deactivate Profile"}
+                              </Text>
+                              {isActive && (
+                                <View style={styles.profActionIconGreen}>
+                                  <Ionicons
+                                    name="chevron-back"
+                                    size={14}
+                                    color="#FFFFFF"
+                                    style={{ marginRight: -6 }}
+                                  />
+                                  <Ionicons
+                                    name="chevron-back"
+                                    size={14}
+                                    color="#FFFFFF"
+                                  />
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })}
+                    </View>
+
+                    {/* Create Professional Profile CTA */}
                     <TouchableOpacity
-                      style={{
-                        backgroundColor: "#155DFC",
-                        borderRadius: 10,
-                        height: 56,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 12,
-                        width: "100%",
-                      }}
+                      style={styles.createProfileBtn}
                       activeOpacity={0.9}
                       onPress={() => navigation.navigate("CreateProfessionalProfile")}
                     >
-                      <Ionicons name="person-outline" size={20} color="#FFFFFF" />
-                      <Text
-                        style={{
-                          color: "#FFFFFF",
-                          fontSize: 16,
-                          fontFamily: "Poppins_500Medium",
-                        }}
-                      >
-                        Create New Professional Profile
+                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                      <Text style={styles.createProfileBtnText}>
+                        Create Professional Profile
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -2105,6 +2266,166 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     fontStyle: "italic",
     color: "#4A4A4A",
+  },
+
+  // ── My Profile → Profile tab ──
+  profSportRow: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 4,
+    gap: 8,
+  },
+  profSportChip: {
+    paddingHorizontal: 14,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F2F2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+  profSportChipActive: {
+    backgroundColor: "#E6F7EE",
+  },
+  profSportChipText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 13,
+    color: "#7A7A7A",
+  },
+  profSportChipTextActive: {
+    color: "#15A765",
+  },
+  profCardsList: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 24,
+    gap: 14,
+  },
+  profCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  profCardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  profCardTitle: {
+    fontFamily: "Montserrat_700Bold",
+    fontWeight: "700",
+    fontSize: 18,
+    lineHeight: 24,
+    color: "#1F1F1F",
+  },
+  profCardSubtitle: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 13,
+    color: "#6F6F6F",
+    marginTop: 2,
+  },
+  profEditBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#F2F2F2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profStatsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 16,
+    marginBottom: 18,
+    paddingHorizontal: 4,
+  },
+  profStatCol: {
+    flex: 1,
+    alignItems: "center",
+  },
+  profStatValue: {
+    fontFamily: "Montserrat_700Bold",
+    fontWeight: "700",
+    fontSize: 18,
+    color: "#1F1F1F",
+  },
+  profStatLabel: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 12,
+    color: "#7A7A7A",
+    marginTop: 2,
+  },
+  profActionBtn: {
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F2F2F2",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    position: "relative",
+  },
+  profActionBtnActive: {
+    backgroundColor: "#E6F7EE",
+  },
+  profActionText: {
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 15,
+    color: "#5C5C5C",
+  },
+  profActionTextActive: {
+    color: "#15A765",
+  },
+  profActionIconDark: {
+    position: "absolute",
+    left: 6,
+    top: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#5C5C5C",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  profActionIconGreen: {
+    position: "absolute",
+    right: 6,
+    top: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#15A765",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  createProfileBtn: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 24,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  createProfileBtnText: {
+    fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 15,
+    color: "#FFFFFF",
   },
 });
 

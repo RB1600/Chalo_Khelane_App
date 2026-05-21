@@ -91,6 +91,27 @@ const SPORTS_OPTIONS = [
   "Tennis", // Tennis listed twice as in the mockup image
 ];
 
+const EXPERIENCE_LEVELS = [
+  { id: "fresher", label: "Fresher", duration: "0-1 year" },
+  { id: "intermediate", label: "Intermediate", duration: "1-3 years" },
+  { id: "professional", label: "Professional", duration: "3-5 years" },
+  { id: "experienced", label: "Experienced", duration: "5+ Years" },
+];
+
+const AVAILABILITY_OPTIONS = [
+  { id: "full_time", label: "Full Time", icon: "briefcase-outline" },
+  { id: "part_time", label: "Part Time", icon: "time-outline" },
+  { id: "weekends_only", label: "Weekends Only", icon: "calendar-outline" },
+  { id: "event_based", label: "Event Based", icon: "star-outline" },
+  { id: "flexible_hours", label: "Flexible Hours", icon: "refresh-circle-outline" },
+];
+
+const RATE_TYPES = [
+  { id: "per_hour", label: "Per Hour", icon: "time-outline" },
+  { id: "per_match", label: "Per Match", icon: "trophy-outline" },
+  { id: "per_day", label: "Per Day", icon: "calendar-outline" },
+];
+
 const CreateProfessionalProfileScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -100,6 +121,18 @@ const CreateProfessionalProfileScreen = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedSports, setSelectedSports] = useState(["Cricket"]); // Cricket pre-selected to match mockup
   const [city, setCity] = useState("");
+  const [selectedExperience, setSelectedExperience] = useState(null);
+  const [selectedAvailability, setSelectedAvailability] = useState([]);
+  const [selectedRateType, setSelectedRateType] = useState(null);
+  const [rateAmount, setRateAmount] = useState("");
+  const [experienceText, setExperienceText] = useState("");
+  const [certificateName, setCertificateName] = useState("");
+
+  const toggleAvailability = (id) => {
+    setSelectedAvailability((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -111,12 +144,27 @@ const CreateProfessionalProfileScreen = () => {
 
   const handleContinue = () => {
     if (currentStep === 1) {
-      if (selectedRole) {
-        setCurrentStep(2);
-      }
+      if (selectedRole) setCurrentStep(2);
     } else if (currentStep === 2) {
-      // Logic for Step 2 completion
-      console.log("Step 2 completed:", { selectedSports, city });
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
+      if (selectedExperience) setCurrentStep(4);
+    } else if (currentStep === 4) {
+      if (selectedRateType && rateAmount.trim()) setCurrentStep(5);
+    } else if (currentStep === 5) {
+      if (experienceText.trim()) setCurrentStep(6);
+    } else if (currentStep === 6) {
+      console.log("Profile created:", {
+        selectedRole,
+        selectedSports,
+        city,
+        selectedExperience,
+        selectedAvailability,
+        selectedRateType,
+        rateAmount,
+        experienceText,
+        certificateName,
+      });
     }
   };
 
@@ -173,6 +221,7 @@ const CreateProfessionalProfileScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Stepper Progress */}
+        {currentStep !== 6 && (
         <View style={styles.stepperContainer}>
           {/* Step 1 */}
           {currentStep > 1 ? (
@@ -190,7 +239,11 @@ const CreateProfessionalProfileScreen = () => {
           <View style={[styles.stepperLine, currentStep > 1 && styles.stepperLineCompleted]} />
 
           {/* Step 2 */}
-          {currentStep === 2 ? (
+          {currentStep > 2 ? (
+            <View style={styles.completedStepCircle}>
+              <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+            </View>
+          ) : currentStep === 2 ? (
             <View style={styles.activeStepOuterRing}>
               <View style={styles.activeStepCircle}>
                 <Text style={styles.activeStepText}>2</Text>
@@ -202,29 +255,62 @@ const CreateProfessionalProfileScreen = () => {
             </View>
           )}
 
-          <View style={styles.stepperLine} />
+          <View style={[styles.stepperLine, currentStep > 2 && styles.stepperLineCompleted]} />
 
           {/* Step 3 */}
-          <View style={styles.inactiveStepCircle}>
-            <Text style={styles.inactiveStepText}>3</Text>
-          </View>
+          {currentStep > 3 ? (
+            <View style={styles.completedStepCircle}>
+              <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+            </View>
+          ) : currentStep === 3 ? (
+            <View style={styles.activeStepOuterRing}>
+              <View style={styles.activeStepCircle}>
+                <Text style={styles.activeStepText}>3</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.inactiveStepCircle}>
+              <Text style={styles.inactiveStepText}>3</Text>
+            </View>
+          )}
 
-          <View style={styles.stepperLine} />
+          <View style={[styles.stepperLine, currentStep > 3 && styles.stepperLineCompleted]} />
 
           {/* Step 4 */}
-          <View style={styles.inactiveStepCircle}>
-            <Text style={styles.inactiveStepText}>4</Text>
-          </View>
+          {currentStep > 4 ? (
+            <View style={styles.completedStepCircle}>
+              <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+            </View>
+          ) : currentStep === 4 ? (
+            <View style={styles.activeStepOuterRing}>
+              <View style={styles.activeStepCircle}>
+                <Text style={styles.activeStepText}>4</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.inactiveStepCircle}>
+              <Text style={styles.inactiveStepText}>4</Text>
+            </View>
+          )}
 
-          <View style={styles.stepperLine} />
+          <View style={[styles.stepperLine, currentStep > 4 && styles.stepperLineCompleted]} />
 
           {/* Step 5 */}
-          <View style={styles.inactiveStepCircle}>
-            <Text style={styles.inactiveStepText}>5</Text>
-          </View>
+          {currentStep === 5 ? (
+            <View style={styles.activeStepOuterRing}>
+              <View style={styles.activeStepCircle}>
+                <Text style={styles.activeStepText}>5</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.inactiveStepCircle}>
+              <Text style={styles.inactiveStepText}>5</Text>
+            </View>
+          )}
         </View>
+        )}
 
-        {currentStep === 1 ? (
+        {currentStep === 1 && (
           <>
             {/* Step 1 Heading */}
             <View style={styles.headingSection}>
@@ -275,7 +361,9 @@ const CreateProfessionalProfileScreen = () => {
               </Text>
             </View>
           </>
-        ) : (
+        )}
+
+        {currentStep === 2 && (
           <>
             {/* Step 2 Heading */}
             <View style={styles.headingSection}>
@@ -333,18 +421,279 @@ const CreateProfessionalProfileScreen = () => {
           </>
         )}
 
-        {/* Continue Button */}
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            currentStep === 1 && !selectedRole && styles.continueButtonDisabled,
-          ]}
-          onPress={handleContinue}
-          disabled={currentStep === 1 && !selectedRole}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
+        {currentStep === 3 && (
+          <>
+            {/* Step 3 Heading */}
+            <View style={styles.headingSection}>
+              <Text style={styles.titleText}>Experience & Availability</Text>
+              <Text style={styles.subtitleText}>
+                Tell us about your experience level and availability
+              </Text>
+            </View>
+
+            {/* Experience level */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Experience level</Text>
+              <View style={{ gap: 12 }}>
+                {EXPERIENCE_LEVELS.map((level) => {
+                  const isSelected = selectedExperience === level.id;
+                  return (
+                    <TouchableOpacity
+                      key={level.id}
+                      style={[
+                        styles.expCard,
+                        isSelected && styles.expCardSelected,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => setSelectedExperience(level.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.expTitle,
+                          isSelected && styles.expTitleSelected,
+                        ]}
+                      >
+                        {level.label}
+                      </Text>
+                      <Text style={styles.expDuration}>{level.duration}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Availability */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Availability</Text>
+              <View style={styles.availGrid}>
+                {AVAILABILITY_OPTIONS.map((opt) => {
+                  const isSelected = selectedAvailability.includes(opt.id);
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      style={[
+                        styles.availCard,
+                        isSelected && styles.availCardSelected,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => toggleAvailability(opt.id)}
+                    >
+                      <Ionicons
+                        name={opt.icon}
+                        size={22}
+                        color={isSelected ? "#15A765" : "#4B5563"}
+                      />
+                      <Text
+                        style={[
+                          styles.availLabel,
+                          isSelected && styles.availLabelSelected,
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </>
+        )}
+
+        {currentStep === 4 && (
+          <>
+            {/* Step 4 Heading */}
+            <View style={styles.headingSection}>
+              <Text style={styles.titleText}>Pricing Setup</Text>
+              <Text style={styles.subtitleText}>Set your rates & pricing structure</Text>
+            </View>
+
+            {/* Rate Type */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Rate Type</Text>
+              <View style={styles.rateTypeRow}>
+                {RATE_TYPES.map((rt) => {
+                  const isSelected = selectedRateType === rt.id;
+                  return (
+                    <TouchableOpacity
+                      key={rt.id}
+                      style={[
+                        styles.rateTypeCard,
+                        isSelected && styles.rateTypeCardSelected,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => setSelectedRateType(rt.id)}
+                    >
+                      <Ionicons
+                        name={rt.icon}
+                        size={26}
+                        color={isSelected ? "#15A765" : "#4B5563"}
+                      />
+                      <Text
+                        style={[
+                          styles.rateTypeLabel,
+                          isSelected && styles.rateTypeLabelSelected,
+                        ]}
+                      >
+                        {rt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Your Rate */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Your Rate</Text>
+              <TextInput
+                style={styles.rateInput}
+                placeholder="Enter amount in ₹"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={rateAmount}
+                onChangeText={setRateAmount}
+              />
+            </View>
+
+            {/* Open to Negotiation banner */}
+            <View style={styles.negotiationBanner}>
+              <Text style={styles.negotiationTitle}>Open to Negotiation</Text>
+              <Text style={styles.negotiationBody}>
+                Allow clients to discuss and negotiate rates based on event requirements
+              </Text>
+            </View>
+          </>
+        )}
+
+        {currentStep === 5 && (
+          <>
+            {/* Step 5 Heading */}
+            <View style={styles.headingSection}>
+              <Text style={styles.titleText}>Experience & Portfolio</Text>
+              <Text style={styles.subtitleText}>Add details to build trust and credibility</Text>
+            </View>
+
+            {/* Tell us about your experience */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Tell us about your experience</Text>
+              <TextInput
+                style={styles.experienceTextarea}
+                placeholder={"Describe your experience, notable events you've worked on, skills, etc."}
+                placeholderTextColor="#9CA3AF"
+                multiline
+                textAlignVertical="top"
+                maxLength={500}
+                value={experienceText}
+                onChangeText={setExperienceText}
+              />
+              <Text style={styles.charCount}>{experienceText.length}/500 characters</Text>
+            </View>
+
+            {/* Certification (Optional) */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Certification (Optional)</Text>
+              <TouchableOpacity
+                style={styles.uploadBox}
+                activeOpacity={0.85}
+                onPress={() => {
+                  /* file picker hook-up TBD */
+                  setCertificateName(certificateName ? "" : "certificate.pdf");
+                }}
+              >
+                <Ionicons name="ribbon-outline" size={26} color="#4B5563" />
+                <Text style={styles.uploadText}>
+                  {certificateName || "Upload certificates"}
+                </Text>
+              </TouchableOpacity>
+              <Text style={styles.charCount}>{certificateName.length}/500 characters</Text>
+            </View>
+
+            {/* Get Verified banner */}
+            <View style={styles.verifiedBanner}>
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color="#1C64F2"
+                style={{ marginTop: 1, marginRight: 10 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.verifiedTitle}>Get Verified</Text>
+                <Text style={styles.verifiedBody}>
+                  Upload government ID and relevant certifications to get a verified
+                  badge. Verified professionals get 3x more job requests!
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        {currentStep === 6 && (
+          <>
+            {/* Preview Heading */}
+            <View style={styles.headingSection}>
+              <Text style={styles.titleText}>Preview</Text>
+              <Text style={styles.subtitleText}>Add details to build trust and credibility</Text>
+            </View>
+
+            <View style={styles.previewBody} />
+          </>
+        )}
+
+        {/* Continue Button(s) */}
+        {currentStep === 3 || currentStep === 4 || currentStep === 5 || currentStep === 6 ? (
+          (() => {
+            const stepDisabled =
+              currentStep === 3
+                ? !selectedExperience
+                : currentStep === 4
+                ? !selectedRateType || !rateAmount.trim()
+                : currentStep === 5
+                ? !experienceText.trim()
+                : false;
+            const ctaLabel =
+              currentStep === 5 || currentStep === 6 ? "Create Profile" : "Continue";
+            return (
+              <View style={styles.bottomRow}>
+                <TouchableOpacity
+                  style={styles.backSquareBtn}
+                  onPress={handleBack}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="arrow-back" size={22} color="#15A765" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.continueButtonRow,
+                    stepDisabled && styles.continueButtonDisabled,
+                  ]}
+                  onPress={handleContinue}
+                  disabled={stepDisabled}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.continueButtonText}>{ctaLabel}</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={20}
+                    color="#FFFFFF"
+                    style={{ marginLeft: 10 }}
+                  />
+                </TouchableOpacity>
+              </View>
+            );
+          })()
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              currentStep === 1 && !selectedRole && styles.continueButtonDisabled,
+            ]}
+            onPress={handleContinue}
+            disabled={currentStep === 1 && !selectedRole}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -579,6 +928,223 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 15,
     color: "#0A0A0A",
+  },
+
+  // ── Step 3: Experience & Availability ──
+  expCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EFF1F5",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  expCardSelected: {
+    borderColor: "#15A765",
+    borderWidth: 1.5,
+    backgroundColor: "#F0FDF4",
+  },
+  expTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#0A0A0A",
+    marginBottom: 2,
+  },
+  expTitleSelected: {
+    color: "#15A765",
+  },
+  expDuration: {
+    fontSize: 13,
+    color: "#8E9AA0",
+  },
+  availGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 12,
+  },
+  availCard: {
+    width: (width - 52) / 2,
+    minHeight: 88,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EFF1F5",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  availCardSelected: {
+    borderColor: "#15A765",
+    borderWidth: 1.5,
+    backgroundColor: "#F0FDF4",
+  },
+  availLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#0A0A0A",
+    marginTop: 8,
+  },
+  availLabelSelected: {
+    color: "#15A765",
+    fontWeight: "600",
+  },
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 16,
+    gap: 12,
+  },
+  backSquareBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#15A765",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  continueButtonRow: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#15A765",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // ── Step 4: Pricing Setup ──
+  rateTypeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  rateTypeCard: {
+    flex: 1,
+    minHeight: 88,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EFF1F5",
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  rateTypeCardSelected: {
+    borderColor: "#15A765",
+    borderWidth: 1.5,
+    backgroundColor: "#F0FDF4",
+  },
+  rateTypeLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#0A0A0A",
+    marginTop: 10,
+  },
+  rateTypeLabelSelected: {
+    color: "#15A765",
+    fontWeight: "600",
+  },
+  rateInput: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 24,
+    height: 48,
+    paddingHorizontal: 20,
+    fontSize: 14,
+    color: "#0A0A0A",
+  },
+  negotiationBanner: {
+    marginHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 24,
+    padding: 14,
+    borderRadius: 10,
+    backgroundColor: "#EFF6FF",
+  },
+  negotiationTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1C64F2",
+    marginBottom: 4,
+  },
+  negotiationBody: {
+    fontSize: 13,
+    color: "#1C64F2",
+    lineHeight: 18,
+  },
+
+  // ── Step 5: Experience & Portfolio ──
+  experienceTextarea: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    minHeight: 110,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 14,
+    fontSize: 14,
+    color: "#0A0A0A",
+    lineHeight: 20,
+  },
+  charCount: {
+    fontSize: 12,
+    color: "#8E9AA0",
+    marginTop: 6,
+  },
+  uploadBox: {
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#D1D5DB",
+    borderStyle: "dashed",
+    minHeight: 96,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    backgroundColor: "#FFFFFF",
+  },
+  uploadText: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginTop: 8,
+  },
+  verifiedBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 24,
+    padding: 14,
+    borderRadius: 10,
+    backgroundColor: "#EFF6FF",
+  },
+  verifiedTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1C64F2",
+    marginBottom: 4,
+  },
+  verifiedBody: {
+    fontSize: 13,
+    color: "#1C64F2",
+    lineHeight: 18,
+  },
+
+  // ── Step 6: Preview ──
+  previewBody: {
+    minHeight: 360,
   },
 });
 
