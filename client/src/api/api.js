@@ -3,7 +3,7 @@
 // ── Server Configuration ──
 // Toggle this ONE line for dev vs production:
 // const Wbsite_SERVER_URL = "https://chalokhelne.com";              // production
-const Wbsite_SERVER_URL = "http://10.108.211.217:3003";          // local development
+const Wbsite_SERVER_URL = "http://192.168.1.68:3003";          // local development
 
 const SERVER_URL = Wbsite_SERVER_URL;
 const BASE_URL = `${SERVER_URL}/api`;

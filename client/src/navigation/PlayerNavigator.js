@@ -65,6 +65,7 @@ import BrowseTournamentJobs from "../screens/player/BrowseTournamentJobs";
 import BrowseJobs from "../screens/player/BrowseJobs";
 import HireProfessional from "../screens/player/HireProfessional";
 import JobDetails from "../screens/player/JobDetails";
+import CreateProfessionalProfileScreen from "../screens/player/CreateProfessionalProfileScreen";
 import RefereeAssignmentsScreen from "../screens/referee/RefereeAssignmentsScreen";
 import RefereeMatchScorer from "../screens/referee/RefereeMatchScorer";
 import TournamentHistory from "../screens/player/TournamentHistory";
@@ -189,6 +190,7 @@ const HomeStack = () => {
       <Stack.Screen name="BrowseJobs" component={BrowseJobs} options={{ headerShown: false, tabBarStyle: { display: 'none' } }} />
       <Stack.Screen name="HireProfessional" component={HireProfessional} options={{ headerShown: false, tabBarStyle: { display: 'none' } }} />
       <Stack.Screen name="JobDetails" component={JobDetails} options={{ headerShown: false, tabBarStyle: { display: 'none' } }} />
+      <Stack.Screen name="CreateProfessionalProfile" component={CreateProfessionalProfileScreen} options={{ headerShown: false, tabBarStyle: { display: 'none' } }} />
 
       {/* Service Role screens (reachable from TournamentDetails → Apply as Staff) */}
       <Stack.Screen name="BrowseTournamentJobsHome" component={BrowseTournamentJobs} options={{ headerShown: false }} />

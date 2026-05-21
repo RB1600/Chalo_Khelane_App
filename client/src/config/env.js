@@ -10,7 +10,7 @@
 
 const ENVIRONMENTS = {
   development: {
-    SERVER_URL: "http://192.168.1.184:3003",
+    SERVER_URL: "http://192.168.1.68:3003",
   },
   staging: {
     SERVER_URL: "https://chalo-khelne-backend-hp3z.onrender.com",

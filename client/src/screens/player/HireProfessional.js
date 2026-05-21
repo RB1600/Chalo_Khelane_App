@@ -15,6 +15,14 @@ import {
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SvgUri } from "react-native-svg";
+import { Asset } from "expo-asset";
+
+const filterUri = Asset.fromModule(require("../../../assets/filter.svg")).uri;
+const starUri = Asset.fromModule(require("../../../assets/star.svg")).uri;
+const intermediateUri = Asset.fromModule(require("../../../assets/Intermediate.svg")).uri;
+const jobProfileUri = Asset.fromModule(require("../../../assets/Jobprofile.svg")).uri;
+const commentUri = Asset.fromModule(require("../../../assets/comment.svg")).uri;
 
 const SAMPLE_PROS = [
   {
@@ -93,7 +101,9 @@ const HireProfessional = () => {
       onPress={() => openProfile(pro)}
     >
       <View style={styles.topRow}>
-        <Image source={pro.avatar} style={styles.avatar} />
+        <View style={styles.avatar}>
+          <SvgUri uri={jobProfileUri} width={60} height={60} />
+        </View>
 
         <View style={styles.infoCol}>
           <View style={styles.nameRow}>
@@ -101,7 +111,7 @@ const HireProfessional = () => {
               <Text style={styles.name}>{pro.name}</Text>
               <Text style={styles.role}>{pro.role}</Text>
               <View style={styles.ratingRow}>
-                <FontAwesome name="star" size={12} color="#F5B400" />
+                <SvgUri uri={starUri} width={12} height={12} />
                 <Text style={styles.ratingText}>{pro.rating}</Text>
               </View>
             </View>
@@ -114,11 +124,11 @@ const HireProfessional = () => {
 
       <View style={styles.metaRow}>
         <View style={styles.metaItem}>
-          <MaterialCommunityIcons name="shield-outline" size={14} color="#6F6F6F" />
+          <SvgUri uri={intermediateUri} width={16} height={16} color="#6F6F6F" />
           <Text style={styles.metaText}>{pro.level}</Text>
         </View>
         <View style={[styles.metaItem, { marginLeft: 24 }]}>
-          <Ionicons name="location-outline" size={14} color="#6F6F6F" />
+          <Ionicons name="location-outline" size={14} color="#4A5565" />
           <Text style={styles.metaText}>{pro.location}</Text>
         </View>
       </View>
@@ -150,7 +160,7 @@ const HireProfessional = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#1F1F1F" />
+          <Ionicons name="chevron-back" size={24} color="#666666" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Hire Professional</Text>
       </View>
@@ -158,7 +168,7 @@ const HireProfessional = () => {
       {/* Search + Filter */}
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
-          <Feather name="search" size={18} color="#9A9A9A" />
+          <Feather name="search" size={20} color="#666666" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search Opportunities"
@@ -168,7 +178,11 @@ const HireProfessional = () => {
           />
         </View>
         <TouchableOpacity style={styles.filterBtn} activeOpacity={0.8}>
-          <MaterialCommunityIcons name="tune-variant" size={20} color="#1F1F1F" />
+          <SvgUri
+            uri={filterUri}
+            width={24}
+            height={24}
+          />
         </TouchableOpacity>
       </View>
 
@@ -213,7 +227,9 @@ const HireProfessional = () => {
 
               {/* Header */}
               <View style={styles.profileHeader}>
-                <Image source={selectedPro?.avatar} style={styles.profileAvatar} />
+                <View style={styles.profileAvatar}>
+                  <SvgUri uri={jobProfileUri} width={65} height={65} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.profileTopRow}>
                     <View style={{ flex: 1, paddingRight: 6 }}>
@@ -222,12 +238,12 @@ const HireProfessional = () => {
                       <View style={styles.profileSubRow}>
                         <Text style={styles.profileJobs}>45 Job Completed</Text>
                         <View style={styles.profileRating}>
-                          <FontAwesome name="star" size={13} color="#F5B400" />
+                          <SvgUri uri={starUri} width={13} height={13} />
                           <Text style={styles.profileRatingText}>{selectedPro?.rating}</Text>
                         </View>
                       </View>
                     </View>
-                    <View style={styles.sportBadge}>
+                    <View style={[styles.sportBadge, { marginRight: 16 }]}>
                       <Text style={styles.sportBadgeText}>{selectedPro?.sport}</Text>
                     </View>
                   </View>
@@ -293,7 +309,11 @@ const HireProfessional = () => {
             {/* Action bar */}
             <View style={[styles.actionBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }]}>
               <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
-                <MaterialCommunityIcons name="text-box-outline" size={22} color="#1F1F1F" />
+                <SvgUri
+                  uri={commentUri}
+                  width={20}
+                  height={20}
+                />
               </TouchableOpacity>
               <TouchableOpacity style={styles.hireBtn} activeOpacity={0.9} onPress={openHireForm}>
                 <Text style={styles.hireBtnText}>Hire Request</Text>
@@ -337,7 +357,9 @@ const HireProfessional = () => {
 
               {/* Pro Summary Card */}
               <View style={styles.proSummary}>
-                <Image source={selectedPro?.avatar} style={styles.proSummaryAvatar} />
+                <View style={styles.proSummaryAvatar}>
+                  <SvgUri uri={jobProfileUri} width={48} height={48} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.proSummaryName}>{selectedPro?.name}</Text>
                   <Text style={styles.proSummaryRole}>{selectedPro?.role}</Text>
@@ -351,7 +373,7 @@ const HireProfessional = () => {
               {/* Form Fields */}
               <Text style={styles.fieldLabel}>Event name</Text>
               <TextInput
-                style={styles.fieldInput}
+                style={[styles.fieldInput, form.eventName ? { color: "#333333" } : null]}
                 placeholder="e.g., Football Jersey, Cricket Bat"
                 placeholderTextColor="#9A9A9A"
                 value={form.eventName}
@@ -360,7 +382,7 @@ const HireProfessional = () => {
 
               <Text style={styles.fieldLabel}>Event Date</Text>
               <TextInput
-                style={styles.fieldInput}
+                style={[styles.fieldInput, form.eventDate ? { color: "#333333" } : null]}
                 placeholder="e.g., Football Jersey, Cricket Bat"
                 placeholderTextColor="#9A9A9A"
                 value={form.eventDate}
@@ -369,7 +391,7 @@ const HireProfessional = () => {
 
               <Text style={styles.fieldLabel}>Location</Text>
               <TextInput
-                style={styles.fieldInput}
+                style={[styles.fieldInput, form.location ? { color: "#333333" } : null]}
                 placeholder="e.g., Football Jersey, Cricket Bat"
                 placeholderTextColor="#9A9A9A"
                 value={form.location}
@@ -378,7 +400,7 @@ const HireProfessional = () => {
 
               <Text style={styles.fieldLabel}>Duration</Text>
               <TextInput
-                style={styles.fieldInput}
+                style={[styles.fieldInput, form.duration ? { color: "#333333" } : null]}
                 placeholder="e.g., Football Jersey, Cricket Bat"
                 placeholderTextColor="#9A9A9A"
                 value={form.duration}
@@ -387,7 +409,7 @@ const HireProfessional = () => {
 
               <Text style={styles.fieldLabel}>Offer Payment</Text>
               <TextInput
-                style={styles.fieldInput}
+                style={[styles.fieldInput, form.offerPayment ? { color: "#333333" } : null]}
                 placeholder="e.g., Football Jersey, Cricket Bat"
                 placeholderTextColor="#9A9A9A"
                 value={form.offerPayment}
@@ -399,7 +421,7 @@ const HireProfessional = () => {
                 Description<Text style={styles.fieldLabelMuted}>(Optional)</Text>
               </Text>
               <TextInput
-                style={[styles.fieldInput, styles.fieldTextarea]}
+                style={[styles.fieldInput, styles.fieldTextarea, form.description ? { color: "#333333" } : null]}
                 placeholder="Add details about condition & usage"
                 placeholderTextColor="#9A9A9A"
                 value={form.description}
@@ -418,7 +440,7 @@ const HireProfessional = () => {
             {/* Action bar */}
             <View style={[styles.actionBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }]}>
               <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85} onPress={closeHireForm}>
-                <Ionicons name="close" size={22} color="#1F1F1F" />
+                <Ionicons name="close" size={22} color="#7D7380" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.hireBtn} activeOpacity={0.9}>
                 <Text style={styles.hireBtnText}>Send Request</Text>
@@ -440,38 +462,41 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingTop: 10,
+    marginBottom: 14,
   },
   backBtn: {
-    width: 36,
-    height: 36,
+    width: 24,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
   },
   headerTitle: {
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
     fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
+    lineHeight: 28,
+    letterSpacing: 0,
     color: "#1F1F1F",
-    marginLeft: 2,
+    marginLeft: 8,
   },
   // search
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 4,
-    gap: 10,
+    gap: 16,
   },
   searchBox: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 999,
+    borderRadius: 53,
     borderWidth: 1,
-    borderColor: "#EAEAEA",
-    paddingHorizontal: 14,
-    height: 44,
+    borderColor: "#EEEEFF",
+    paddingHorizontal: 16,
+    height: 50,
   },
   searchInput: {
     flex: 1,
@@ -482,12 +507,12 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   filterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 12,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#EAEAEA",
+    borderColor: "#EEEEFF",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -497,26 +522,31 @@ const styles = StyleSheet.create({
   // card
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#EFEFEF",
-    padding: 14,
+    borderColor: "#EEEEFF",
+    padding: 16,
     marginBottom: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    minHeight: 170,
+    shadowColor: "#8B96BA",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
   },
   topRow: {
     flexDirection: "row",
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 50,
     marginRight: 12,
     backgroundColor: "#F2F2F2",
+    borderColor: "#EEEEFF",
+    borderWidth: 1,
+    opacity: 1,
+    overflow: "hidden",
   },
   infoCol: {
     flex: 1,
@@ -526,94 +556,99 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   name: {
-    fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 20,
+    fontFamily: "Montserrat_500Medium",
+    color: "#0A0A0A",
   },
   role: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
   },
   ratingRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-    gap: 4,
+    marginTop: 2,
+    gap: 2,
   },
   ratingText: {
-    fontSize: 12,
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#1F1F1F",
+    fontSize: 11,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#333333",
   },
   sportBadge: {
-    backgroundColor: "#EEEAFB",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+    backgroundColor: "#F1F0FC",
+    paddingHorizontal: 11,
+    borderRadius: 10,
+    height: 25,
+    minWidth: 61,
+    justifyContent: "center",
+    alignItems: "center",
   },
   sportBadgeText: {
-    fontSize: 11,
-    fontFamily: "Montserrat_500Medium",
-    color: "#5B4FCF",
+    fontFamily: "Poppins_400regular",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#666666",
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 2,
   },
   metaText: {
-    fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#6F6F6F",
+    fontSize: 14,
+    fontFamily: "Poppins_400regular",
+    color: "#4A5565",
   },
   licenseRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 10,
+    marginTop: 8,
   },
   licenseChip: {
-    backgroundColor: "#FBEAF1",
-    paddingHorizontal: 10,
+    backgroundColor: "#FAF5FF",
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   licenseText: {
-    fontSize: 11,
-    fontFamily: "Montserrat_500Medium",
-    color: "#C2185B",
+    fontSize: 12,
+    fontFamily: "Poppins_400regular",
+    color: "#8200DB",
   },
   bottomRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 12,
+    marginTop: 8,
   },
   rateWrap: {
     flexDirection: "row",
     alignItems: "baseline",
   },
   rate: {
-    fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#15A765",
+    fontSize: 20,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#258C3F",
   },
   rateUnit: {
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    color: "#453E4C",
   },
   note: {
     fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#7A7A7A",
+    fontFamily: "Montserrat_500Medium",
+    color: "#666666",
   },
   // Profile sheet
   modalBackdrop: {
@@ -629,42 +664,42 @@ const styles = StyleSheet.create({
   closeFabRow: {
     alignItems: "flex-end",
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 8,
   },
   closeFab: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 50,
     backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D6D6D6",
+    padding: 10,
+    opacity: 1,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 4,
+
   },
   sheet: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    paddingHorizontal: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
     paddingTop: 16,
     maxHeight: Dimensions.get("window").height * 0.88,
   },
   hireSheet: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    paddingHorizontal: 20,
-    paddingTop: 18,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     height: Dimensions.get("window").height * 0.88,
   },
   sheetCaption: {
-    fontSize: 13,
-    fontFamily: "Montserrat_500Medium",
-    color: "#6F6F6F",
-    marginBottom: 12,
+    fontSize: 14,
+    fontFamily: "Poppins_500Medium",
+    color: "#333333",
+    marginBottom: 8,
   },
   profileHeader: {
     flexDirection: "row",
@@ -676,6 +711,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginRight: 12,
     backgroundColor: "#F2F2F2",
+    overflow: "hidden",
   },
   profileTopRow: {
     flexDirection: "row",
@@ -683,25 +719,23 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 20,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontFamily: "Montserrat_500Medium",
+    color: "#333333",
   },
   profileRole: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#666666",
   },
   profileSubRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 6,
-    gap: 14,
+    gap: 16,
   },
   profileJobs: {
     fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
   },
   profileRating: {
     flexDirection: "row",
@@ -709,134 +743,133 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   profileRatingText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#1F1F1F",
+    fontSize: 11,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#333333",
   },
   priceRow: {
     flexDirection: "row",
     alignItems: "baseline",
-    marginTop: 14,
+    marginTop: 10,
   },
   priceAmount: {
     fontSize: 24,
-    fontFamily: "Montserrat_700Bold",
-    color: "#15A765",
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#258C3F",
   },
   priceUnit: {
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    color: "#453E4C",
   },
   sheetDivider: {
     height: 1,
-    backgroundColor: "#EEEEEE",
-    marginVertical: 14,
+    backgroundColor: "#DDDDDD",
+    marginVertical: 12,
   },
   statRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 16,
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#F4F5F7",
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 10,
+    paddingVertical: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   statTitle: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#101828",
   },
   statSub: {
     fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 4,
+    fontFamily: "Poppins_400Regular",
+    color: "#6A7282",
   },
   availCard: {
-    backgroundColor: "#F4F5F7",
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     marginTop: 12,
   },
   availTitle: {
     fontSize: 14,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginBottom: 10,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#101828",
   },
   availChipsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 10,
   },
   dayChip: {
-    backgroundColor: "#E2F4EA",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    backgroundColor: "#15A7651A",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
   },
   dayChipText: {
     fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#1A8E4A",
+    fontFamily: "Poppins_400Regular",
+    color: "#15A765",
+    textAlign: "center",
   },
   weekendChip: {
-    backgroundColor: "#C5E9D2",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    backgroundColor: "#15A7651A",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
   },
   weekendChipText: {
     fontSize: 12,
-    fontFamily: "Montserrat_600SemiBold",
+    fontFamily: "Poppins_400Regular",
     color: "#15A765",
   },
   sectionHeading: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginTop: 18,
-    marginBottom: 8,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#101828",
+    marginTop: 12,
+    marginBottom: 0,
   },
   aboutText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#4A4A4A",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#364153",
     lineHeight: 20,
   },
   certRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
-    marginTop: 4,
+    gap: 12,
   },
   certChip: {
-    backgroundColor: "#F3EAFB",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    backgroundColor: "#FAF5FF",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   certText: {
     fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#5B4FCF",
+    fontFamily: "Poppins_400Regular",
+    color: "#8200DB",
   },
   actionBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 12,
-    gap: 10,
+    paddingTop: 2,
+    gap: 16,
   },
   iconBtn: {
     width: 50,
     height: 50,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E5E5",
+    borderColor: "#666666",
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
@@ -850,100 +883,104 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   hireBtnText: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
   },
   // Hire Form sheet
   hireFormTitle: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginBottom: 14,
+    fontSize: 16,
+    fontFamily: "Poppins_500Medium",
+    color: "#333333",
+    marginBottom: 8,
   },
   proSummary: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F4F5F7",
-    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 10,
     padding: 12,
-    marginBottom: 18,
+    marginBottom: 12,
   },
   proSummaryAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 50,
     marginRight: 12,
     backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+    borderColor: "#EEEEFF",
+    borderWidth: 1,
   },
   proSummaryName: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#0A0A0A",
   },
   proSummaryRole: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#4A5565",
   },
   proSummaryRate: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#15A765",
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#00A63E",
   },
   proSummaryUnit: {
-    fontSize: 11,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 12,
+    fontFamily: "Poppins_400Regular",
+    color: "#6A7282",
+
   },
   fieldLabel: {
-    fontSize: 14,
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#1F1F1F",
-    marginBottom: 8,
-    marginTop: 6,
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+    color: "#1A181B",
+    marginBottom: 6,
   },
   fieldLabelMuted: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Montserrat_500Medium",
-    color: "#7A7A7A",
+    color: "#666666",
   },
   fieldInput: {
-    backgroundColor: "#EFF0F2",
-    borderRadius: 999,
+    backgroundColor: "#F2F2F2",
+    borderRadius: 16,
     paddingHorizontal: 16,
-    height: 44,
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#1F1F1F",
-    marginBottom: 14,
+    height: 48,
+    borderColor: "#F6F6F6",
+    borderWidth: 1,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#8D848F",
+    marginBottom: 16
   },
   fieldTextarea: {
-    borderRadius: 14,
+    borderRadius: 16,
     height: 90,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   fieldHint: {
     fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: -6,
-    marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
+    marginTop: -12,
+    paddingBottom: 10,
   },
   noteText: {
     fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
+    fontFamily: "Poppins_400Regular#0088FF",
     color: "#1E88F5",
     lineHeight: 18,
-    marginTop: 6,
+    marginTop: -10,
   },
   formDivider: {
     height: 1,
-    backgroundColor: "#EEEEEE",
-    marginTop: 4,
+    backgroundColor: "#DDDDDD",
+    marginTop: 0,
+    marginBottom: 10,
   },
 });
 

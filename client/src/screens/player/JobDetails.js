@@ -15,6 +15,14 @@ import {
 import { Ionicons, MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SvgUri } from "react-native-svg";
+import { Asset } from "expo-asset";
+
+const starUri = Asset.fromModule(require("../../../assets/star.svg")).uri;
+const bookmarkUri = Asset.fromModule(require("../../../assets/bookmark .svg")).uri;
+const bookmarkFilledUri = Asset.fromModule(require("../../../assets/bookmark_filled.svg")).uri;
+const refereeUri = Asset.fromModule(require("../../../assets/Referee.svg")).uri;
+const calender1Uri = Asset.fromModule(require("../../../assets/calender1.svg")).uri;
 
 const SCHEDULE = [
   { id: "1", title: "Semi-Final 1", date: "Friday, 15 May", time: "9:00 AM - 1:00 PM" },
@@ -47,7 +55,7 @@ const COVER_MAX = 500;
 
 const STATUS_BANNERS = {
   Shortlist: {
-    bg: "#E0EBFF",
+    bg: "#DBEAFE",
     title: "Shortlisted",
     message: "Great news! You've been shortlisted. The organizer may contact you soon.",
   },
@@ -108,17 +116,18 @@ const JobDetails = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#1F1F1F" />
+          <Ionicons name="chevron-back" size={24} color="#666666" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Job Details</Text>
         <TouchableOpacity
           onPress={() => setBookmarked((p) => !p)}
           style={styles.bookmarkBtn}
         >
-          <Ionicons
-            name={bookmarked ? "bookmark" : "bookmark-outline"}
-            size={22}
-            color="#1F1F1F"
+          <SvgUri
+            uri={bookmarked ? bookmarkFilledUri : bookmarkUri}
+            width={20}
+            height={20}
+            color="#666666"
           />
         </TouchableOpacity>
       </View>
@@ -126,9 +135,43 @@ const JobDetails = () => {
 
       {/* Status banner shown when viewing an existing application */}
       {banner && (
-        <View style={[styles.statusBanner, { backgroundColor: banner.bg }]}>
-          <Text style={styles.statusBannerTitle}>{banner.title}</Text>
-          <Text style={styles.statusBannerMessage}>{banner.message}</Text>
+        <View
+          style={[
+            styles.statusBanner,
+            { backgroundColor: banner.bg },
+            status === "Shortlist" && { paddingVertical: 12, paddingHorizontal: 16 },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusBannerTitle,
+              status === "Shortlist" && {
+                fontFamily: "Montserrat_600SemiBold",
+                fontSize: 18,
+                lineHeight: 28,
+                letterSpacing: -0.44,
+                color: "#0A0A0A",
+                marginBottom: 1,
+              },
+            ]}
+          >
+            {banner.title}
+          </Text>
+          <Text
+            style={[
+              styles.statusBannerMessage,
+              status === "Shortlist" && {
+                fontFamily: "Poppins_400Regular",
+                fontSize: 14,
+                lineHeight: 20,
+                letterSpacing: -0.15,
+                color: "#0A0A0A",
+                textAlign: "center",
+              },
+            ]}
+          >
+            {banner.message}
+          </Text>
         </View>
       )}
 
@@ -140,17 +183,20 @@ const JobDetails = () => {
         {/* Job Header */}
         <View style={styles.jobHeaderRow}>
           <View style={styles.logoWrap}>
-            <Image
-              source={require("../../../assets/cricket-avatar.jpg")}
-              style={styles.logo}
+            <SvgUri
+              uri={refereeUri}
+              width={60}
+              height={60}
             />
           </View>
           <View style={{ flex: 1, paddingRight: 8 }}>
-            <Text style={styles.jobTitle}>Referee Needed</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+              <Text style={styles.jobTitle}>Referee Needed</Text>
+              <View style={[styles.sportBadge, { marginLeft: 50, marginRight: 0 }]}>
+                <Text style={styles.sportBadgeText}>Cricket</Text>
+              </View>
+            </View>
             <Text style={styles.jobSubtitle}>Ionix Sports Club</Text>
-          </View>
-          <View style={styles.sportBadge}>
-            <Text style={styles.sportBadgeText}>Cricket</Text>
           </View>
         </View>
 
@@ -190,7 +236,12 @@ const JobDetails = () => {
         {SCHEDULE.map((m) => (
           <View key={m.id} style={styles.scheduleCard}>
             <View style={styles.calIconWrap}>
-              <Ionicons name="calendar-outline" size={20} color="#3B82F6" />
+              <SvgUri
+                uri={calender1Uri}
+                width={24}
+                height={24}
+                color="#3B82F6"
+              />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.scheduleTitle}>{m.title}</Text>
@@ -230,7 +281,7 @@ const JobDetails = () => {
 
         <View style={styles.orgStatsRow}>
           <View style={styles.orgStat}>
-            <FontAwesome name="star" size={14} color="#F5B400" />
+            <SvgUri uri={starUri} width={14} height={14} />
             <Text style={styles.orgStatBold}> 4.8</Text>
           </View>
           <View style={styles.orgStat}>
@@ -290,9 +341,10 @@ const JobDetails = () => {
               {/* Job summary */}
               <View style={styles.applyJobRow}>
                 <View style={styles.applyLogoWrap}>
-                  <Image
-                    source={require("../../../assets/cricket-avatar.jpg")}
-                    style={styles.applyLogo}
+                  <SvgUri
+                    uri={refereeUri}
+                    width={60}
+                    height={60}
                   />
                 </View>
                 <View style={{ flex: 1, paddingRight: 8 }}>
@@ -319,9 +371,10 @@ const JobDetails = () => {
                         selected ? styles.profileIconWrapSelected : null,
                       ]}
                     >
-                      <Ionicons
-                        name="calendar-outline"
-                        size={22}
+                      <SvgUri
+                        uri={calender1Uri}
+                        width={24}
+                        height={24}
                         color={selected ? "#15A765" : "#3B82F6"}
                       />
                     </View>
@@ -334,18 +387,18 @@ const JobDetails = () => {
                       </View>
                     </View>
                     <View style={styles.profileRating}>
-                      <FontAwesome name="star" size={13} color="#F5B400" />
+                      <SvgUri uri={starUri} width={16} height={16} />
                       <Text style={styles.profileRatingText}>{p.rating}</Text>
                     </View>
                   </TouchableOpacity>
                 );
               })}
 
-              <Text style={styles.applySectionHeading}>
+              <Text style={[styles.applySectionHeading, { marginTop: 14 }]}>
                 Cover Message<Text style={styles.applySectionMuted}>(Optional)</Text>
               </Text>
               <TextInput
-                style={styles.coverInput}
+                style={[styles.coverInput, cover ? { color: "#333333" } : null]}
                 placeholder={"Introduce yourself and explain why you're a good fit for this job..."}
                 placeholderTextColor="#9A9A9A"
                 value={cover}
@@ -365,7 +418,7 @@ const JobDetails = () => {
             {/* Action bar */}
             <View style={[styles.actionBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }]}>
               <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85} onPress={closeApply}>
-                <Ionicons name="close" size={22} color="#1F1F1F" />
+                <Ionicons name="close" size={22} color="#7D7380" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.submitBtn} activeOpacity={0.9} onPress={handleSubmit}>
                 <Text style={styles.submitBtnText}>Submit Application</Text>
@@ -385,7 +438,7 @@ const JobDetails = () => {
         onRequestClose={closeSuccess}
       >
         <Pressable style={styles.successBackdrop} onPress={closeSuccess}>
-          <Pressable style={styles.successCard} onPress={() => {}}>
+          <Pressable style={styles.successCard} onPress={() => { }}>
             <View style={styles.successIconWrap}>
               <View style={styles.successIconCircle}>
                 <Ionicons name="checkmark" size={42} color="#FFFFFF" />
@@ -418,27 +471,30 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   backBtn: {
-    width: 36,
-    height: 36,
+    width: 24,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
   },
   headerTitle: {
     flex: 1,
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
     fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
+    lineHeight: 28,
+    letterSpacing: 0,
     color: "#1F1F1F",
-    marginLeft: 2,
+    marginLeft: 8,
   },
   bookmarkBtn: {
-    width: 36,
-    height: 36,
+    width: 20,
+    height: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   headerBorder: {
     height: 1,
-    backgroundColor: "#EFEFEF",
+    backgroundColor: "#DDDDDD",
   },
   // Status banner
   statusBanner: {
@@ -467,15 +523,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 12,
   },
   logoWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 16,
     overflow: "hidden",
     backgroundColor: "#F5F5F5",
     marginRight: 12,
+    borderColor: "#EEEEFF",
+    borderWidth: 1,
   },
   logo: {
     width: "100%",
@@ -483,42 +541,48 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   jobTitle: {
-    fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 20,
+    fontFamily: "Montserrat_500Medium",
+    color: "#0A0A0A",
   },
   jobSubtitle: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
   },
   sportBadge: {
-    backgroundColor: "#EEEAFB",
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
+    backgroundColor: "#F1F0FC",
+    paddingHorizontal: 11,
+    borderRadius: 10,
+    height: 25,
+    minWidth: 61,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
   sportBadgeText: {
+    fontFamily: "Poppins_400regular",
     fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#5B4FCF",
+    lineHeight: 16,
+    color: "#666666",
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
   // Manager + address
   section: {
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 8,
   },
   managerName: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginBottom: 6,
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+    color: "#0A0A0A",
+    marginBottom: 4,
   },
   addressText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
     lineHeight: 19,
   },
   // Earnings Card
@@ -526,47 +590,48 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 16,
-    marginTop: 14,
-    backgroundColor: "#E6F7EC",
-    borderRadius: 12,
-    padding: 14,
+    marginTop: 11,
+    backgroundColor: "#F0FDF4",
+    borderRadius: 10,
+    padding: 13,
+    borderColor: "#B9F8CF",
+    borderWidth: 1,
   },
   earningRate: {
     fontSize: 14,
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#15A765",
+    fontFamily: "Poppins_400Regular",
+    color: "#008236",
   },
   earningMatches: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#15A765",
-    marginTop: 4,
+    fontSize: 12,
+    fontFamily: "Poppins_400Regular",
+    color: "#008236",
   },
   estimatedLabel: {
-    fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#15A765",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#008236",
   },
   estimatedAmount: {
-    fontSize: 20,
-    fontFamily: "Montserrat_700Bold",
-    color: "#15A765",
+    fontSize: 24,
+    fontFamily: "Poppins_700Bold",
+    color: "#00A63E",
     marginTop: 2,
   },
   // Sections
   sectionHeading: {
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginTop: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
+    marginTop: 24,
     marginBottom: 8,
     paddingHorizontal: 16,
   },
   bodyText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#4A4A4A",
-    lineHeight: 20,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
+    lineHeight: 22,
     paddingHorizontal: 16,
   },
   // Schedule
@@ -575,39 +640,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 16,
     marginTop: 10,
-    backgroundColor: "#F4F5F7",
+    backgroundColor: "#F9FAFB",
     borderRadius: 12,
-    padding: 12,
+    padding: 10,
   },
   calIconWrap: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: "#E0EBFF",
+    backgroundColor: "#DBEAFE",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   scheduleTitle: {
     fontSize: 14,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
   },
   scheduleDate: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
   },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginTop: 16,
   },
   timeText: {
-    fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#4A4A4A",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#333333",
+
   },
   // Bullets
   bulletList: {
@@ -619,15 +685,15 @@ const styles = StyleSheet.create({
   },
   bulletDot: {
     fontSize: 14,
-    color: "#1F1F1F",
+    color: "#666666",
     marginRight: 8,
     lineHeight: 20,
   },
   bulletText: {
     flex: 1,
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#1F1F1F",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
     lineHeight: 20,
   },
   // Organizer
@@ -638,51 +704,53 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   orgAvatar: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     borderRadius: 25,
-    backgroundColor: "#2563EB",
+    backgroundColor: "#2B7FFF",
     justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
+    marginBottom: 12,
   },
   orgAvatarText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
+    fontFamily: "Poppins_700Bold",
     color: "#FFFFFF",
   },
   orgName: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#0A0A0A",
   },
   orgDesc: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#4A5565",
     marginTop: 4,
     lineHeight: 17,
   },
   orgStatsRow: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    marginTop: 12,
-    gap: 18,
-    alignItems: "center",
+    paddingHorizontal: 75,
+    marginTop: 8,
+    gap: 20,
+    alignItems: "flex-end",
   },
   orgStat: {
     flexDirection: "row",
     alignItems: "center",
   },
   orgStatBold: {
-    fontSize: 13,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 14,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#101828",
   },
   orgStatLight: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6A7282",
   },
   // Apply bar
   applyBar: {
@@ -690,22 +758,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F1F2F3",
     borderTopWidth: 1,
     borderTopColor: "#EFEFEF",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 16,
   },
   applyBtn: {
-    height: 52,
-    borderRadius: 14,
+    paddingVertical: 13,
+    borderRadius: 12,
     backgroundColor: "#15A765",
     justifyContent: "center",
     alignItems: "center",
   },
   applyBtnText: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
   },
   // Apply for Job Sheet
@@ -722,49 +790,47 @@ const styles = StyleSheet.create({
   closeFabRow: {
     alignItems: "flex-end",
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 8,
   },
   closeFab: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 50,
     backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D6D6D6",
+    padding: 10,
+    opacity: 1,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 4,
   },
   applySheet: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 22,
+    borderTopLeftRadius: 16,
     borderTopRightRadius: 22,
-    paddingHorizontal: 20,
-    paddingTop: 18,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     height: Dimensions.get("window").height * 0.86,
   },
   applyTitle: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginBottom: 12,
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
+    marginBottom: 10,
   },
   applyDivider: {
     height: 1,
-    backgroundColor: "#EEEEEE",
+    backgroundColor: "#D6D6D6",
   },
   applyJobRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 16,
-    paddingBottom: 6,
+    paddingTop: 12,
   },
   applyLogoWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 16,
     overflow: "hidden",
     backgroundColor: "#F5F5F5",
     marginRight: 12,
@@ -775,15 +841,14 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   applyJobTitle: {
-    fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 20,
+    fontFamily: "Montserrat_500Medium",
+    color: "#0A0A0A",
   },
   applyJobSubtitle: {
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 2,
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    color: "#453E4C",
   },
   applyJobRate: {
     fontSize: 15,
@@ -791,26 +856,26 @@ const styles = StyleSheet.create({
     color: "#15A765",
   },
   applySectionHeading: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
-    marginTop: 18,
-    marginBottom: 10,
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
+    marginTop: 24,
+    marginBottom: 8,
   },
   applySectionMuted: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "Montserrat_500Medium",
-    color: "#7A7A7A",
+    color: "#666666",
   },
   profileCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F4F5F7",
+    backgroundColor: "#F9FAFB",
     borderRadius: 12,
-    padding: 12,
+    padding: 10,
     marginBottom: 10,
     borderWidth: 1.5,
-    borderColor: "transparent",
+    borderColor: "#F9FAFB",
   },
   profileCardSelected: {
     backgroundColor: "#E6F7EC",
@@ -830,19 +895,18 @@ const styles = StyleSheet.create({
   },
   profileTitle: {
     fontSize: 14,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
   },
   profileMetaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-    gap: 6,
+    gap: 12,
   },
   profileMetaText: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
   },
   profileMetaDot: {
     fontSize: 12,
@@ -852,46 +916,47 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginBottom: 20,
   },
   profileRatingText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 12,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#333333",
   },
   coverInput: {
     backgroundColor: "#EFF0F2",
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     minHeight: 110,
-    fontSize: 13,
-    fontFamily: "Montserrat_400Regular",
-    color: "#1F1F1F",
+    fontSize: 16,
+    fontFamily: "Poppins_400Regular",
+    color: "#8D848F",
   },
   charCounter: {
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
-    marginTop: 6,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6A7282",
+    marginTop: 4,
   },
   noteText: {
     fontSize: 12,
-    fontFamily: "Montserrat_500Medium",
-    color: "#1E88F5",
+    fontFamily: "Poppins_400Regular",
+    color: "#0088FF",
     lineHeight: 18,
-    marginTop: 14,
+    marginTop: 10,
   },
   actionBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 12,
-    gap: 10,
+    paddingTop: 20,
+    gap: 16,
   },
   iconBtn: {
     width: 50,
     height: 50,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E5E5",
+    borderColor: "#666666",
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
@@ -905,8 +970,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitBtnText: {
-    fontSize: 15,
-    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
   },
   // Success Modal
