@@ -91,9 +91,7 @@
       }
     },
     "owner": "prathameshdhanawate",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.1",
     "updates": {
       "url": "https://u.expo.dev/36367fcb-9494-4782-bc95-c84b440cb9fd"
     }

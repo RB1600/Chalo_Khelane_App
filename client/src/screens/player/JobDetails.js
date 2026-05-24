@@ -267,8 +267,8 @@ const JobDetails = () => {
 
         {/* Match Schedule */}
         <Text style={styles.sectionHeading}>Match Schedule</Text>
-        {SCHEDULE.map((m) => (
-          <View key={m.id} style={styles.scheduleCard}>
+        {SCHEDULE.map((m, index) => (
+          <View key={m.id} style={[styles.scheduleCard, index === 0 && { marginTop: 0 }]}>
             <View style={styles.calIconWrap}>
               <SvgUri
                 uri={calender1Uri}

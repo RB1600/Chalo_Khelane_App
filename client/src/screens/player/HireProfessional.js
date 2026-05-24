@@ -79,6 +79,7 @@ const HireProfessional = () => {
   const [search, setSearch] = useState("");
   const [selectedPro, setSelectedPro] = useState(null);
   const [hireFormOpen, setHireFormOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -161,6 +162,12 @@ const HireProfessional = () => {
   const closeProfile = () => setSelectedPro(null);
   const openHireForm = () => setHireFormOpen(true);
   const closeHireForm = () => setHireFormOpen(false);
+
+  const handleSendRequest = () => {
+    setHireFormOpen(false);
+    setForm({ eventName: "", eventDate: "", location: "", duration: "", offerPayment: "", description: "" });
+    setSuccessOpen(true);
+  };
 
   const profileVisible = !!selectedPro && !hireFormOpen;
 
@@ -441,7 +448,7 @@ const HireProfessional = () => {
               </View>
 
               {/* About */}
-              <Text style={styles.sectionHeading}>Availability</Text>
+              <Text style={styles.sectionHeading}>About us</Text>
               <Text style={styles.aboutText}>
                 Experienced cricket referee with 3+ years of professional experience. Specialized in local and state-level tournaments.
               </Text>
@@ -621,12 +628,49 @@ const HireProfessional = () => {
               <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85} onPress={closeHireForm}>
                 <Ionicons name="close" size={22} color="#7D7380" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.hireBtn} activeOpacity={0.9}>
+              <TouchableOpacity style={styles.hireBtn} activeOpacity={0.9} onPress={handleSendRequest}>
                 <Text style={styles.hireBtnText}>Send Request</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal
+        visible={successOpen}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setSuccessOpen(false)}
+      >
+        <Pressable
+          style={styles.successBackdrop}
+          onPress={() => setSuccessOpen(false)}
+        >
+          <Pressable style={styles.successCard} onPress={() => {}}>
+            <View style={styles.successIconWrap}>
+              <View style={styles.successIconCircle}>
+                <Ionicons name="checkmark" size={42} color="#FFFFFF" />
+              </View>
+            </View>
+            <Text style={styles.successTitle}>Request Sent!</Text>
+            <Text style={styles.successMessage}>
+              Your hire request has been sent to {selectedPro?.name}. They will respond within 24-48 hours.
+            </Text>
+            <TouchableOpacity
+              style={styles.successBtn}
+              activeOpacity={0.9}
+              onPress={() => {
+                setSuccessOpen(false);
+                setSelectedPro(null);
+              }}
+            >
+              <Text style={styles.successBtnText}>Done</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -976,9 +1020,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   availTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
     color: "#101828",
+    marginBottom: 2,
   },
   availChipsRow: {
     flexDirection: "row",
@@ -1036,6 +1081,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Poppins_400Regular",
     color: "#8200DB",
+    marginBottom: 2,
   },
   actionBar: {
     flexDirection: "row",
@@ -1268,6 +1314,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
     color: "#333333",
+  },
+  // Success modal
+  successBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  successCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 28,
+    alignItems: "center",
+    width: "100%",
+  },
+  successIconWrap: {
+    marginBottom: 20,
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successTitle: {
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
+    color: "#0A0A0A",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  successMessage: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#666666",
+    textAlign: "center",
+    lineHeight: 21,
+    marginBottom: 24,
+  },
+  successBtn: {
+    width: "100%",
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successBtnText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#FFFFFF",
   },
 });
 

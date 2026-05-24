@@ -1912,6 +1912,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Montserrat_500Medium",
     color: "#0A0A0A",
+    marginTop: 9,
   },
   jobVenue: {
     fontSize: 14,
@@ -1926,6 +1927,7 @@ const styles = StyleSheet.create({
     minWidth: 61,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 9,
   },
   sportBadgeText: {
     fontFamily: "Poppins_400regular",
@@ -2284,15 +2286,14 @@ const styles = StyleSheet.create({
   },
   reqTitle: {
     fontFamily: "Montserrat_500Medium",
-    fontWeight: "500",
     fontSize: 20,
     lineHeight: 24,
     letterSpacing: -0.31,
     color: "#1A181B",
+    marginBottom: 2,
   },
   reqFrom: {
     fontFamily: "Montserrat_500Medium",
-    fontWeight: "500",
     fontSize: 14,
     lineHeight: 14,
     letterSpacing: 0,
@@ -2312,7 +2313,7 @@ const styles = StyleSheet.create({
   reqMetaRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 4,
+    paddingVertical: 0,
   },
   reqMetaLabel: {
     fontFamily: "Poppins_400Regular",
@@ -2643,7 +2644,7 @@ const styles = StyleSheet.create({
   },
   upcomingDetailsBtn: {
     marginTop: 14,
-    height: 44,
+    height: 48,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: "#15A765",
@@ -2652,7 +2653,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   upcomingDetailsBtnText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
     color: "#15A765",
   },
@@ -3054,27 +3055,27 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   reqPopupTitle: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontSize: 20,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#333333",
     marginBottom: 8,
   },
   reqPopupBody: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Poppins_400Regular",
     color: "#6F6F6F",
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   reqPopupList: {
     marginTop: 4,
     marginBottom: 16,
-    gap: 2,
+    gap: 0,
   },
   reqPopupBullet: {
     fontSize: 14,
     fontFamily: "Poppins_400Regular",
-    color: "#6F6F6F",
+    color: "#666666",
     lineHeight: 22,
   },
   reqPopupOutlineBtn: {
