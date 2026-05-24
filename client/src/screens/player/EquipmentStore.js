@@ -178,14 +178,32 @@ const EquipmentStore = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Promo banner */}
-        <ImageBackground
-          source={require("../../../assets/equipment-banner.png")}
+        {/* To use the uploaded image: save it as client/assets/equipment-banner.png
+            then replace the LinearGradient block below with:
+            <ImageBackground
+              source={require("../../../assets/equipment-banner.png")}
+              style={styles.banner}
+              imageStyle={styles.bannerImageStyle}
+              resizeMode="cover"
+            >
+              <View style={styles.bannerSpacer} />
+              <View style={styles.bannerTextWrap}>...</View>
+            </ImageBackground>
+        */}
+        <LinearGradient
+          colors={["#C9A7DA", "#E0C9E5", "#C8A7D8"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.banner}
-          imageStyle={styles.bannerImageStyle}
-          resizeMode="cover"
         >
-          {/* Sports equipment occupies left ~40% of the asset, text overlays the right side */}
-          <View style={styles.bannerSpacer} />
+          <View style={styles.bannerImageWrap}>
+            <View style={styles.bannerHalo} />
+            <Image
+              source={require("../../../assets/PlayNow3D.png")}
+              style={styles.bannerImage}
+              resizeMode="contain"
+            />
+          </View>
           <View style={styles.bannerTextWrap}>
             <Text style={styles.bannerTitle}>Play More. Earn More.</Text>
             <Text style={styles.bannerSubtitle}>
@@ -195,7 +213,7 @@ const EquipmentStore = () => {
               <Text style={styles.bookNowText}>Book Now</Text>
             </TouchableOpacity>
           </View>
-        </ImageBackground>
+        </LinearGradient>
 
         {/* Search bar */}
         <View style={styles.searchWrap}>
@@ -583,20 +601,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginHorizontal: 16,
     marginTop: 6,
-    minHeight: 160,
-    overflow: "hidden",
     borderRadius: 18,
+    padding: 16,
+    minHeight: 152,
+    overflow: "hidden",
   },
   bannerImageStyle: {
     borderRadius: 18,
+  },
+  bannerImageWrap: {
+    width: 130,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  bannerHalo: {
+    position: "absolute",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#F2E3F2",
+    opacity: 0.7,
+  },
+  bannerImage: {
+    width: 120,
+    height: 130,
+    zIndex: 1,
   },
   bannerSpacer: {
     width: "38%",
   },
   bannerTextWrap: {
     flex: 1,
-    paddingRight: 14,
-    paddingVertical: 16,
+    paddingLeft: 6,
     justifyContent: "center",
   },
   bannerTitle: {

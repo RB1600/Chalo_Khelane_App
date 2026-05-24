@@ -17,12 +17,16 @@ import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SvgUri } from "react-native-svg";
 import { Asset } from "expo-asset";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const filterUri = Asset.fromModule(require("../../../assets/filter.svg")).uri;
 const starUri = Asset.fromModule(require("../../../assets/star.svg")).uri;
 const intermediateUri = Asset.fromModule(require("../../../assets/Intermediate.svg")).uri;
 const jobProfileUri = Asset.fromModule(require("../../../assets/Jobprofile.svg")).uri;
 const commentUri = Asset.fromModule(require("../../../assets/comment.svg")).uri;
+
+const ROLE_OPTIONS = ["All", "Referee", "Coach", "Cameraman", "Commentator", "Scorer"];
+const SPORT_OPTIONS = ["All", "Cricket", "Football", "Badminton", "Basketball"];
 
 const SAMPLE_PROS = [
   {
@@ -75,6 +79,75 @@ const HireProfessional = () => {
   const [search, setSearch] = useState("");
   const [selectedPro, setSelectedPro] = useState(null);
   const [hireFormOpen, setHireFormOpen] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedSports, setSelectedSports] = useState([]);
+
+  const ROLE_VALUES = ROLE_OPTIONS.filter((r) => r !== "All");
+  const SPORT_VALUES = SPORT_OPTIONS.filter((s) => s !== "All");
+
+  const toggleSelection = (option, list, allValues, setList) => {
+    if (option === "All") {
+      const allSelected = allValues.every((v) => list.includes(v));
+      setList(allSelected ? [] : allValues);
+      return;
+    }
+    setList((prev) =>
+      prev.includes(option) ? prev.filter((x) => x !== option) : [...prev, option]
+    );
+  };
+
+  const isOptionChecked = (option, list, allValues) => {
+    if (option === "All") return allValues.length > 0 && allValues.every((v) => list.includes(v));
+    return list.includes(option);
+  };
+
+  const toggleRole = (role) => toggleSelection(role, selectedRoles, ROLE_VALUES, setSelectedRoles);
+  const toggleSport = (sport) => toggleSelection(sport, selectedSports, SPORT_VALUES, setSelectedSports);
+
+  const activeChips = [
+    ...selectedRoles.map((label) => ({ label, type: "role" })),
+    ...selectedSports.map((label) => ({ label, type: "sport" })),
+  ];
+
+  const removeChip = (chip) => {
+    if (chip.type === "role") {
+      setSelectedRoles((prev) => prev.filter((r) => r !== chip.label));
+    } else {
+      setSelectedSports((prev) => prev.filter((s) => s !== chip.label));
+    }
+  };
+
+  const matchesRole = (proRole, selected) => {
+    if (selected.length === 0) return true;
+    return selected.some((r) => proRole.toLowerCase().includes(r.toLowerCase()));
+  };
+
+  const filteredPros = SAMPLE_PROS.filter((pro) => {
+    if (!matchesRole(pro.role, selectedRoles)) return false;
+    if (selectedSports.length > 0 && !selectedSports.includes(pro.sport)) return false;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const haystack = [pro.name, pro.role, pro.sport, pro.location].join(" ").toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const renderCheckRow = (label, checked, onToggle) => (
+    <TouchableOpacity
+      key={label}
+      style={styles.checkRow}
+      onPress={onToggle}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+        {checked && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+      </View>
+      <Text style={styles.checkLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
   const [form, setForm] = useState({
     eventName: "",
     eventDate: "",
@@ -177,7 +250,11 @@ const HireProfessional = () => {
             onChangeText={setSearch}
           />
         </View>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.filterBtn}
+          activeOpacity={0.8}
+          onPress={() => setFilterOpen(true)}
+        >
           <SvgUri
             uri={filterUri}
             width={24}
@@ -186,13 +263,90 @@ const HireProfessional = () => {
         </TouchableOpacity>
       </View>
 
+      {activeChips.length > 0 && (
+        <View style={styles.chipsRow}>
+          {activeChips.map((chip) => (
+            <View key={`${chip.type}-${chip.label}`} style={styles.chip}>
+              <Text style={styles.chipText}>{chip.label}</Text>
+              <TouchableOpacity onPress={() => removeChip(chip)} hitSlop={8}>
+                <Ionicons name="close" size={14} color="#666666" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 30 }}
         showsVerticalScrollIndicator={false}
       >
-        {SAMPLE_PROS.map(renderProCard)}
+        {filteredPros.length > 0 ? (
+          filteredPros.map(renderProCard)
+        ) : (
+          <View style={styles.emptyResults}>
+            <Ionicons name="search-outline" size={40} color="#CCCCCC" />
+            <Text style={styles.emptyResultsTitle}>No professionals found</Text>
+            <Text style={styles.emptyResultsHint}>
+              Try a different search or clear the filters
+            </Text>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Filter Bottom Sheet */}
+      <Modal
+        visible={filterOpen}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setFilterOpen(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setFilterOpen(false)} />
+
+        <View style={styles.sheetAnchor} pointerEvents="box-none">
+          <View style={styles.closeFabRow}>
+            <TouchableOpacity
+              style={styles.closeFab}
+              onPress={() => setFilterOpen(false)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="close" size={20} color="#1F1F1F" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.filterSheet}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              bounces={false}
+            >
+              <Text style={styles.filterSheetTitle}>Filter by</Text>
+
+              <Text style={styles.filterSheetSection}>Role</Text>
+              {ROLE_OPTIONS.map((role) =>
+                renderCheckRow(
+                  role,
+                  isOptionChecked(role, selectedRoles, ROLE_VALUES),
+                  () => toggleRole(role)
+                )
+              )}
+
+              <View style={styles.filterSheetDivider} />
+
+              <Text style={styles.filterSheetSection}>Sports</Text>
+              {SPORT_OPTIONS.map((sport) =>
+                renderCheckRow(
+                  sport,
+                  isOptionChecked(sport, selectedSports, SPORT_VALUES),
+                  () => toggleSport(sport)
+                )
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Profile Bottom Sheet */}
       <Modal
@@ -381,13 +535,38 @@ const HireProfessional = () => {
               />
 
               <Text style={styles.fieldLabel}>Event Date</Text>
-              <TextInput
-                style={[styles.fieldInput, form.eventDate ? { color: "#333333" } : null]}
-                placeholder="e.g., Football Jersey, Cricket Bat"
-                placeholderTextColor="#9A9A9A"
-                value={form.eventDate}
-                onChangeText={(v) => updateField("eventDate", v)}
-              />
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setShowDatePicker(true)}
+                style={[styles.fieldInput, styles.fieldInputRow]}
+              >
+                <Text
+                  style={[
+                    styles.fieldInputText,
+                    form.eventDate ? { color: "#333333" } : { color: "#9A9A9A" },
+                  ]}
+                >
+                  {form.eventDate || "Select event date"}
+                </Text>
+                <Ionicons name="calendar-outline" size={20} color="#666666" />
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={form.eventDate ? new Date(form.eventDate) : new Date()}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (event.type === "set" && selectedDate) {
+                      const yyyy = selectedDate.getFullYear();
+                      const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                      const dd = String(selectedDate.getDate()).padStart(2, "0");
+                      updateField("eventDate", `${yyyy}-${mm}-${dd}`);
+                    }
+                  }}
+                />
+              )}
 
               <Text style={styles.fieldLabel}>Location</Text>
               <TextInput
@@ -956,6 +1135,16 @@ const styles = StyleSheet.create({
     color: "#8D848F",
     marginBottom: 16
   },
+  fieldInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  fieldInputText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+  },
   fieldTextarea: {
     borderRadius: 16,
     height: 90,
@@ -981,6 +1170,104 @@ const styles = StyleSheet.create({
     backgroundColor: "#DDDDDD",
     marginTop: 0,
     marginBottom: 10,
+  },
+  // Filter chips
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 8,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 4,
+    paddingRight: 8,
+    paddingBottom: 4,
+    paddingLeft: 12,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "#15A765",
+    backgroundColor: "rgba(21, 167, 101, 0.10)",
+    gap: 4,
+    height: 24,
+    minWidth: 86,
+    justifyContent: "center",
+  },
+  chipText: {
+    fontFamily: "Poppins_400regular",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#15A765",
+  },
+  emptyResults: {
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyResultsTitle: {
+    fontSize: 14,
+    fontFamily: "Montserrat_700Bold",
+    color: "#6F6F6F",
+    marginTop: 12,
+  },
+  emptyResultsHint: {
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    color: "#9A9A9A",
+    marginTop: 4,
+  },
+  // Filter sheet
+  filterSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+    maxHeight: Dimensions.get("window").height * 0.78,
+  },
+  filterSheetTitle: {
+    fontSize: 14,
+    fontFamily: "Poppins_500Medium",
+    color: "#333333",
+    marginBottom: 8,
+  },
+  filterSheetSection: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#666666",
+    marginBottom: 8,
+  },
+  filterSheetDivider: {
+    height: 1,
+    backgroundColor: "#DDDDDD",
+    marginVertical: 16,
+  },
+  checkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#D9D9D9",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: "#15A765",
+    borderColor: "#15A765",
+  },
+  checkLabel: {
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+    color: "#333333",
   },
 });
 

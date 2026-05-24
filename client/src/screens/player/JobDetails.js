@@ -103,12 +103,14 @@ const JobDetails = () => {
   const insets = useSafeAreaInsets();
   const [bookmarked, setBookmarked] = useState(false);
 
-  const status = route.params?.status;
+  const routeStatus = route.params?.status;
   const timeLabel = route.params?.timeLabel;
   const jobTitleParam = route.params?.title || "Referee Needed";
   const jobSubtitleParam = route.params?.subtitle || "Ionix Sports Club";
   const jobOrgParam = route.params?.org;
   const jobRateParam = route.params?.rate;
+  const [appliedStatus, setAppliedStatus] = useState(routeStatus || null);
+  const status = appliedStatus;
   const rawBanner = status ? STATUS_BANNERS[status] : null;
   const banner = rawBanner
     ? { ...rawBanner, message: rawBanner.message.replace("{timeLabel}", timeLabel || "soon") }
@@ -129,7 +131,10 @@ const JobDetails = () => {
     setSuccessOpen(true);
   };
 
-  const closeSuccess = () => setSuccessOpen(false);
+  const closeSuccess = () => {
+    setSuccessOpen(false);
+    setAppliedStatus("Pending");
+  };
 
   const renderBullet = (text, key) => (
     <View key={key} style={styles.bulletRow}>

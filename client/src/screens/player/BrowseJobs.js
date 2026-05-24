@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   Dimensions,
   Modal,
   Pressable,
+  Animated,
+  PanResponder,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -96,13 +98,6 @@ const SAMPLE_JOBS = [
 
 const ROLE_OPTIONS = ["All", "Referee", "Coach", "Cameraman", "Commentator", "Scorer"];
 const SPORT_OPTIONS = ["All", "Cricket", "Football", "Badminton", "Basketboll"];
-
-const APPLICATION_STATS = [
-  { label: "Total", value: "24" },
-  { label: "Pending", value: "12" },
-  { label: "Accepted", value: "08" },
-  { label: "Rejected", value: "04" },
-];
 
 const APPLICATIONS = [
   {
@@ -276,9 +271,9 @@ const PROFILE_JOBS = {
 };
 
 const PROFILE_JOB_TABS = [
-  { key: "active", label: "Active", count: "03" },
-  { key: "upcoming", label: "Upcoming", count: "05" },
-  { key: "completed", label: "Completed", count: "10" },
+  { key: "active", label: "Active" },
+  { key: "upcoming", label: "Upcoming" },
+  { key: "completed", label: "Completed" },
 ];
 
 const JOB_STATUS_STYLES = {
@@ -350,6 +345,146 @@ const PROFESSIONAL_PROFILES = [
   },
 ];
 
+const KNOB_SIZE = 36;
+const KNOB_INSET = 6;
+
+const ProfileActionToggle = ({ isActive, onActivate, onDeactivate }) => {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const offsetRef = useRef(0);
+  const maxXRef = useRef(0);
+  const isActiveRef = useRef(isActive);
+  const firedRef = useRef(false);
+  const callbacksRef = useRef({ onActivate, onDeactivate });
+
+  isActiveRef.current = isActive;
+  callbacksRef.current = { onActivate, onDeactivate };
+
+  const onLayout = (e) => {
+    const w = e.nativeEvent.layout.width;
+    const newMax = Math.max(0, w - KNOB_SIZE - KNOB_INSET * 2);
+    if (newMax === maxXRef.current) return;
+    maxXRef.current = newMax;
+    const target = isActiveRef.current ? newMax : 0;
+    offsetRef.current = target;
+    translateX.setValue(target);
+  };
+
+  React.useEffect(() => {
+    const max = maxXRef.current;
+    if (max === 0) return;
+    const target = isActive ? max : 0;
+    offsetRef.current = target;
+    Animated.spring(translateX, {
+      toValue: target,
+      useNativeDriver: true,
+      friction: 7,
+      tension: 80,
+    }).start();
+  }, [isActive, translateX]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dx) > 6 && Math.abs(g.dx) > Math.abs(g.dy),
+      onMoveShouldSetPanResponderCapture: (_, g) =>
+        Math.abs(g.dx) > 6 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        firedRef.current = false;
+        translateX.stopAnimation((v) => {
+          offsetRef.current = v;
+        });
+      },
+      onPanResponderMove: (_, g) => {
+        const max = maxXRef.current;
+        const next = Math.max(0, Math.min(max, offsetRef.current + g.dx));
+        translateX.setValue(next);
+      },
+      onPanResponderRelease: (_, g) => {
+        const max = maxXRef.current;
+        const threshold = max * 0.35;
+        const finalX = Math.max(0, Math.min(max, offsetRef.current + g.dx));
+        const active = isActiveRef.current;
+        const cbs = callbacksRef.current;
+
+        const settle = (to, fire) => {
+          Animated.spring(translateX, {
+            toValue: to,
+            useNativeDriver: true,
+            friction: 7,
+            tension: 80,
+          }).start();
+          offsetRef.current = to;
+          if (fire && !firedRef.current) {
+            firedRef.current = true;
+            fire();
+          }
+        };
+
+        if (!active && finalX >= threshold) {
+          settle(0, cbs.onActivate);
+        } else if (active && finalX <= max - threshold) {
+          settle(max, cbs.onDeactivate);
+        } else {
+          settle(active ? max : 0, null);
+        }
+      },
+      onPanResponderTerminate: () => {
+        const snap = isActiveRef.current ? maxXRef.current : 0;
+        Animated.spring(translateX, {
+          toValue: snap,
+          useNativeDriver: true,
+          friction: 7,
+          tension: 80,
+        }).start();
+        offsetRef.current = snap;
+      },
+    })
+  ).current;
+
+  return (
+    <View
+      onLayout={onLayout}
+      style={[
+        styles.swipeTrack,
+        isActive && styles.swipeTrackActive,
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <Text
+        style={[
+          styles.swipeLabel,
+          isActive && styles.swipeLabelActive,
+        ]}
+      >
+        {isActive ? "Deactivate Profile" : "Activate Profile"}
+      </Text>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.swipeKnob,
+          isActive && styles.swipeKnobActive,
+          { transform: [{ translateX }] },
+        ]}
+      >
+        <Ionicons
+          name={isActive ? "chevron-back" : "chevron-forward"}
+          size={14}
+          color="#FFFFFF"
+          style={{ marginRight: -6 }}
+        />
+        <Ionicons
+          name={isActive ? "chevron-back" : "chevron-forward"}
+          size={14}
+          color="#FFFFFF"
+        />
+      </Animated.View>
+    </View>
+  );
+};
+
 const BrowseJobs = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -365,9 +500,65 @@ const BrowseJobs = () => {
   const [profilesActiveMap, setProfilesActiveMap] = useState(
     PROFESSIONAL_PROFILES.reduce((acc, p) => ({ ...acc, [p.id]: p.active }), {})
   );
+  const [activateConfirmProfile, setActivateConfirmProfile] = useState(null);
+  const [deactivateConfirmProfile, setDeactivateConfirmProfile] = useState(null);
 
-  const toggleProfileActive = (id) =>
-    setProfilesActiveMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleProfileActive = (id) => {
+    const isCurrentlyActive = !!profilesActiveMap[id];
+    const pro = PROFESSIONAL_PROFILES.find((p) => p.id === id) || { id, role: "Profile" };
+    if (isCurrentlyActive) {
+      setDeactivateConfirmProfile(pro);
+    } else {
+      setActivateConfirmProfile(pro);
+    }
+  };
+
+  const cancelActivate = () => setActivateConfirmProfile(null);
+  const confirmActivate = () => {
+    if (activateConfirmProfile) {
+      setProfilesActiveMap((prev) => ({
+        ...prev,
+        [activateConfirmProfile.id]: true,
+      }));
+    }
+    setActivateConfirmProfile(null);
+  };
+
+  const [requestAccepted, setRequestAccepted] = useState(null);
+  const [requestRejected, setRequestRejected] = useState(null);
+
+  const openAcceptPopup = (req) => setRequestAccepted(req);
+  const closeAcceptPopup = () => setRequestAccepted(null);
+  const openRejectPopup = (req) => setRequestRejected(req);
+  const closeRejectPopup = () => setRequestRejected(null);
+
+  const cancelDeactivate = () => setDeactivateConfirmProfile(null);
+  const confirmDeactivate = () => {
+    if (deactivateConfirmProfile) {
+      setProfilesActiveMap((prev) => ({
+        ...prev,
+        [deactivateConfirmProfile.id]: false,
+      }));
+    }
+    setDeactivateConfirmProfile(null);
+  };
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const applicationStats = [
+    { label: "Total", value: pad2(APPLICATIONS.length) },
+    {
+      label: "Pending",
+      value: pad2(APPLICATIONS.filter((a) => a.status === "Pending").length),
+    },
+    {
+      label: "Accepted",
+      value: pad2(APPLICATIONS.filter((a) => a.status === "Accepted").length),
+    },
+    {
+      label: "Rejected",
+      value: pad2(APPLICATIONS.filter((a) => a.status === "Rejected").length),
+    },
+  ];
 
   const visibleProfiles =
     profileSportFilter === "All"
@@ -458,12 +649,12 @@ const BrowseJobs = () => {
       </View>
 
       <View style={styles.reqMetaRow}>
-        <Ionicons name="briefcase-outline" size={18} color="#6F6F6F" />
+        <Ionicons name="briefcase-outline" size={16} color="#666666" />
         <Text style={styles.reqMetaLabel}>Role: </Text>
         <Text style={styles.reqMetaValue}>{req.role}</Text>
       </View>
       <View style={styles.reqMetaRow}>
-        <Ionicons name="location-outline" size={18} color="#6F6F6F" />
+        <Ionicons name="location-outline" size={16} color="#666666" />
         <Text style={styles.reqMetaValue}>{req.location}</Text>
       </View>
       <View style={styles.reqMetaRow}>
@@ -471,7 +662,7 @@ const BrowseJobs = () => {
           uri={calenderUri}
           width={16}
           height={16}
-          color="#6F6F6F"
+          color="#666666"
         />
         <Text style={styles.reqMetaValue}>{req.date}</Text>
       </View>
@@ -479,10 +670,18 @@ const BrowseJobs = () => {
       <Text style={styles.reqRate}>{req.rate}</Text>
 
       <View style={styles.reqActions}>
-        <TouchableOpacity style={styles.rejectBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.rejectBtn}
+          activeOpacity={0.8}
+          onPress={() => openRejectPopup(req)}
+        >
           <Ionicons name="close" size={22} color="#D7263D" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.acceptBtn} activeOpacity={0.9}>
+        <TouchableOpacity
+          style={styles.acceptBtn}
+          activeOpacity={0.9}
+          onPress={() => openAcceptPopup(req)}
+        >
           <Ionicons name="checkmark" size={18} color="#FFFFFF" />
           <Text style={styles.acceptBtnText}>Accept</Text>
         </TouchableOpacity>
@@ -492,8 +691,21 @@ const BrowseJobs = () => {
 
   const renderApplicationCard = (app) => {
     const status = STATUS_STYLES[app.status] || STATUS_STYLES.Pending;
+    const goToDetails = () =>
+      navigation.navigate("JobDetails", {
+        jobId: app.id,
+        status: app.status,
+        title: app.title,
+        subtitle: app.venue,
+        rate: app.rate,
+      });
     return (
-      <View key={app.id} style={styles.appCard}>
+      <TouchableOpacity
+        key={app.id}
+        style={styles.appCard}
+        activeOpacity={0.85}
+        onPress={goToDetails}
+      >
         <View style={styles.appTopRow}>
           <View style={styles.appLogoWrap}>
             <SvgUri
@@ -524,22 +736,11 @@ const BrowseJobs = () => {
             <Text style={styles.appRate}>{app.rate} </Text>
             <Text style={styles.appRateUnit}>{app.rateUnit}</Text>
           </View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() =>
-              navigation.navigate("JobDetails", {
-                jobId: app.id,
-                status: app.status,
-                title: app.title,
-                subtitle: app.venue,
-                rate: app.rate,
-              })
-            }
-          >
+          <TouchableOpacity activeOpacity={0.7} onPress={goToDetails}>
             <Text style={styles.viewDetailsLink}>View Details</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -689,7 +890,7 @@ const BrowseJobs = () => {
                 {/* Stats row */}
                 <View style={styles.statsBg}>
                   <View style={styles.statsRow}>
-                    {APPLICATION_STATS.map((s) => (
+                    {applicationStats.map((s) => (
                       <View key={s.label} style={styles.statBox}>
                         <Text style={styles.statValue}>{s.value}</Text>
                         <Text style={styles.statLabel}>{s.label}</Text>
@@ -822,7 +1023,7 @@ const BrowseJobs = () => {
                                 active && styles.jobTabTextActive,
                               ]}
                             >
-                              {t.label} ({t.count})
+                              {t.label} ({pad2((PROFILE_JOBS[t.key] || []).length)})
                             </Text>
                             {active && <View style={styles.jobTabUnderline} />}
                           </TouchableOpacity>
@@ -1061,53 +1262,11 @@ const BrowseJobs = () => {
                               </View>
                             </View>
 
-                            <TouchableOpacity
-                              activeOpacity={0.9}
-                              onPress={() => toggleProfileActive(p.id)}
-                              style={[
-                                styles.profActionBtn,
-                                isActive && styles.profActionBtnActive,
-                              ]}
-                            >
-                              {!isActive && (
-                                <View style={styles.profActionIconDark}>
-                                  <Ionicons
-                                    name="chevron-forward"
-                                    size={14}
-                                    color="#FFFFFF"
-                                    style={{ marginRight: -6 }}
-                                  />
-                                  <Ionicons
-                                    name="chevron-forward"
-                                    size={14}
-                                    color="#FFFFFF"
-                                  />
-                                </View>
-                              )}
-                              <Text
-                                style={[
-                                  styles.profActionText,
-                                  isActive && styles.profActionTextActive,
-                                ]}
-                              >
-                                {isActive ? "Activate Profile" : "Deactivate Profile"}
-                              </Text>
-                              {isActive && (
-                                <View style={styles.profActionIconGreen}>
-                                  <Ionicons
-                                    name="chevron-back"
-                                    size={14}
-                                    color="#FFFFFF"
-                                    style={{ marginRight: -6 }}
-                                  />
-                                  <Ionicons
-                                    name="chevron-back"
-                                    size={14}
-                                    color="#FFFFFF"
-                                  />
-                                </View>
-                              )}
-                            </TouchableOpacity>
+                            <ProfileActionToggle
+                              isActive={isActive}
+                              onActivate={() => toggleProfileActive(p.id)}
+                              onDeactivate={() => toggleProfileActive(p.id)}
+                            />
                           </View>
                         );
                       })}
@@ -1229,6 +1388,206 @@ const BrowseJobs = () => {
           </View>
         </ScrollView>
       )}
+
+      {/* Activate Profile Confirmation */}
+      <Modal
+        visible={!!activateConfirmProfile}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={cancelActivate}
+      >
+        <Pressable style={styles.activateBackdrop} onPress={cancelActivate}>
+          <Pressable style={styles.activateCard} onPress={() => { }}>
+            <View style={styles.activateIconCircle}>
+              <Ionicons name="checkmark" size={42} color="#FFFFFF" />
+            </View>
+            <Text style={styles.activateTitle}>
+              Activate {activateConfirmProfile?.role || "Referee"} Profile?
+            </Text>
+            <Text style={styles.activateBody}>
+              Your {(activateConfirmProfile?.role || "referee").toLowerCase()} profile will become active and visible for:
+            </Text>
+            <View style={styles.activateList}>
+              <Text style={styles.activateBullet}>{"•"}  Match requests</Text>
+              <Text style={styles.activateBullet}>{"•"}  Tournament assignments</Text>
+              <Text style={styles.activateBullet}>
+                {"•"}  {activateConfirmProfile?.role || "Referee"} job opportunities
+              </Text>
+            </View>
+            <Text style={styles.activateSwitchNote}>You can switch profiles anytime.</Text>
+            <View style={styles.activateBtnRow}>
+              <TouchableOpacity
+                style={styles.activateCancelBtn}
+                activeOpacity={0.85}
+                onPress={cancelActivate}
+              >
+                <Text style={styles.activateCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.activateConfirmBtn}
+                activeOpacity={0.9}
+                onPress={confirmActivate}
+              >
+                <Text style={styles.activateConfirmText}>Activate</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Deactivate Profile Confirmation */}
+      <Modal
+        visible={!!deactivateConfirmProfile}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={cancelDeactivate}
+      >
+        <Pressable style={styles.activateBackdrop} onPress={cancelDeactivate}>
+          <Pressable style={styles.activateCard} onPress={() => { }}>
+            <View style={styles.deactivateIconWrap}>
+              <Ionicons name="warning-outline" size={48} color="#FF2D55" />
+            </View>
+            <Text style={styles.activateTitle}>
+              Deactivate {deactivateConfirmProfile?.role || "Referee"} Profile?
+            </Text>
+            <Text style={styles.activateBody}>You will stop receiving:</Text>
+            <View style={styles.activateList}>
+              <Text style={styles.activateBullet}>{"•"}  Match requests</Text>
+              <Text style={styles.activateBullet}>{"•"}  Job applications</Text>
+              <Text style={styles.activateBullet}>{"•"}  Tournament invitations</Text>
+            </View>
+            <Text style={styles.activateSwitchNote}>
+              Your profile data and history will remain safe.
+            </Text>
+            <View style={styles.activateBtnRow}>
+              <TouchableOpacity
+                style={styles.activateCancelBtn}
+                activeOpacity={0.85}
+                onPress={cancelDeactivate}
+              >
+                <Text style={styles.activateCancelText}>Keep Active</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deactivateConfirmBtn}
+                activeOpacity={0.9}
+                onPress={confirmDeactivate}
+              >
+                <Text style={styles.activateConfirmText}>Deactivate</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Match Request Accepted Popup */}
+      <Modal
+        visible={!!requestAccepted}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={closeAcceptPopup}
+      >
+        <Pressable style={styles.reqPopupBackdrop} onPress={closeAcceptPopup}>
+          <Pressable style={styles.reqPopupCard} onPress={() => { }}>
+            <TouchableOpacity
+              style={styles.reqPopupCloseBtn}
+              activeOpacity={0.8}
+              onPress={closeAcceptPopup}
+            >
+              <Ionicons name="close" size={20} color="#1F1F1F" />
+            </TouchableOpacity>
+
+            <View style={styles.reqAcceptIconCircle}>
+              <Ionicons name="checkmark" size={32} color="#FFFFFF" />
+            </View>
+            <Text style={styles.reqPopupTitle}>Match Request Accepted</Text>
+            <Text style={styles.reqPopupBody}>Event has been added to your schedule.</Text>
+            <Text style={styles.reqPopupBody}>You will receive:</Text>
+            <View style={styles.reqPopupList}>
+              <Text style={styles.reqPopupBullet}>{"•"}  Match reminders</Text>
+              <Text style={styles.reqPopupBullet}>{"•"}  Live scoreboard access</Text>
+              <Text style={styles.reqPopupBullet}>{"•"}  Event updates</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.reqPopupOutlineBtn}
+              activeOpacity={0.85}
+              onPress={() => {
+                const req = requestAccepted;
+                closeAcceptPopup();
+                if (req) {
+                  navigation.navigate("JobDetails", {
+                    jobId: req.id,
+                    status: "Accepted",
+                    title: req.title,
+                    subtitle: req.fromName,
+                    rate: req.rate,
+                  });
+                }
+              }}
+            >
+              <Text style={styles.reqPopupOutlineBtnText}>view details</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Match Request Rejected Popup */}
+      <Modal
+        visible={!!requestRejected}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={closeRejectPopup}
+      >
+        <Pressable style={styles.reqPopupBackdrop} onPress={closeRejectPopup}>
+          <Pressable style={styles.reqPopupCard} onPress={() => { }}>
+            <TouchableOpacity
+              style={styles.reqPopupCloseBtn}
+              activeOpacity={0.8}
+              onPress={closeRejectPopup}
+            >
+              <Ionicons name="close" size={20} color="#1F1F1F" />
+            </TouchableOpacity>
+
+            <View style={styles.reqRejectIconCircle}>
+              <Ionicons name="close" size={32} color="#FFFFFF" />
+            </View>
+            <Text style={styles.reqPopupTitle}>Match Request Rejected</Text>
+            <Text style={styles.reqPopupBody}>The request has been declined.</Text>
+            <Text style={styles.reqPopupBody}>Please note:</Text>
+            <View style={styles.reqPopupList}>
+              <Text style={styles.reqPopupBullet}>{"•"}  Requester will be notified</Text>
+              <Text style={styles.reqPopupBullet}>{"•"}  Event will not be added to your schedule</Text>
+              <Text style={styles.reqPopupBullet}>{"•"}  You can review past requests anytime</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.reqPopupOutlineBtn}
+              activeOpacity={0.85}
+              onPress={() => {
+                const req = requestRejected;
+                closeRejectPopup();
+                if (req) {
+                  navigation.navigate("JobDetails", {
+                    jobId: req.id,
+                    status: "Rejected",
+                    title: req.title,
+                    subtitle: req.fromName,
+                    rate: req.rate,
+                  });
+                }
+              }}
+            >
+              <Text style={styles.reqPopupOutlineBtnText}>view details</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Filter Bottom Sheet */}
       <Modal
@@ -1719,8 +2078,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#E53935",
   },
   subTabText: {
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
     fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
+    lineHeight: 16,
+    letterSpacing: 0,
     color: "#666666",
   },
   subTabTextActive: {
@@ -1731,6 +2093,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#15A765",
     borderRadius: 2,
     marginHorizontal: 4,
+    marginBottom: -1,
   },
   subTabsDivider: {
     height: 1,
@@ -1907,15 +2270,20 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   reqTitle: {
-    fontSize: 20,
     fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 20,
+    lineHeight: 24,
+    letterSpacing: -0.31,
     color: "#1A181B",
   },
   reqFrom: {
-    fontSize: 14,
     fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 14,
+    lineHeight: 14,
+    letterSpacing: 0,
     color: "#666666",
-
   },
   newBadge: {
     backgroundColor: "#E5F3FF",
@@ -1934,21 +2302,32 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   reqMetaLabel: {
-    fontSize: 14,
     fontFamily: "Poppins_400Regular",
+    fontWeight: "400",
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0,
     color: "#666666",
     marginLeft: 8,
+    textAlignVertical: "center",
   },
   reqMetaValue: {
+    fontFamily: "Poppins_400Regular",
+    fontWeight: "400",
     fontSize: 14,
-    fontFamily: "Poppins_400Regula",
+    lineHeight: 20,
+    letterSpacing: 0,
     color: "#1A181B",
     marginLeft: 4,
     flexShrink: 1,
+    textAlignVertical: "center",
   },
   reqRate: {
-    fontSize: 20,
     fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 20,
+    letterSpacing: 0,
     color: "#258C3F",
     marginTop: 10,
   },
@@ -2093,10 +2472,14 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   jobTabText: {
-    fontSize: 14,
-    fontFamily: "Montserrat_600SemiBold",
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 16,
+    lineHeight: 16,
+    letterSpacing: 0,
     color: "#6F6F6F",
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   jobTabTextActive: {
     color: "#15A765",
@@ -2105,6 +2488,8 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: "#15A765",
     borderRadius: 2,
+    marginTop: 0,
+    marginBottom: -1,
   },
   profileJobsList: {
     paddingHorizontal: 16,
@@ -2426,6 +2811,233 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 15,
     color: "#FFFFFF",
+  },
+  // Activate Profile confirmation modal
+  activateBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  activateCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingTop: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 22,
+    alignItems: "stretch",
+  },
+  activateIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginBottom: 18,
+  },
+  activateTitle: {
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginBottom: 12,
+  },
+  activateBody: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6F6F6F",
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  activateList: {
+    marginBottom: 12,
+    gap: 4,
+  },
+  activateBullet: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6F6F6F",
+    lineHeight: 22,
+  },
+  activateSwitchNote: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#1F1F1F",
+    marginBottom: 18,
+  },
+  activateBtnRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  activateCancelBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#D6D6D6",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activateCancelText: {
+    fontSize: 15,
+    fontFamily: "Montserrat_500Medium",
+    color: "#5C5C5C",
+  },
+  activateConfirmBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activateConfirmText: {
+    fontSize: 15,
+    fontFamily: "Montserrat_500Medium",
+    color: "#FFFFFF",
+  },
+  deactivateIconWrap: {
+    alignSelf: "center",
+    marginBottom: 18,
+  },
+  deactivateConfirmBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#FF2D55",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  // Swipe-to-toggle pill
+  swipeTrack: {
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F2F2F2",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    position: "relative",
+    overflow: "hidden",
+  },
+  swipeTrackActive: {
+    backgroundColor: "#E6F7EE",
+  },
+  swipeLabel: {
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 15,
+    color: "#5C5C5C",
+  },
+  swipeLabelActive: {
+    color: "#15A765",
+  },
+  swipeKnob: {
+    position: "absolute",
+    left: 6,
+    top: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#5C5C5C",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  swipeKnobActive: {
+    backgroundColor: "#15A765",
+  },
+  // Request Accept / Reject popups
+  reqPopupBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 28,
+  },
+  reqPopupCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingTop: 32,
+    paddingHorizontal: 24,
+    paddingBottom: 22,
+    alignItems: "stretch",
+    position: "relative",
+  },
+  reqPopupCloseBtn: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reqAcceptIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#15A765",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  reqRejectIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#FF2D55",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  reqPopupTitle: {
+    fontSize: 18,
+    fontFamily: "Montserrat_700Bold",
+    color: "#1F1F1F",
+    marginBottom: 8,
+  },
+  reqPopupBody: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6F6F6F",
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  reqPopupList: {
+    marginTop: 4,
+    marginBottom: 16,
+    gap: 2,
+  },
+  reqPopupBullet: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6F6F6F",
+    lineHeight: 22,
+  },
+  reqPopupOutlineBtn: {
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#D6D6D6",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reqPopupOutlineBtnText: {
+    fontSize: 15,
+    fontFamily: "Montserrat_500Medium",
+    color: "#5C5C5C",
   },
 });
 
