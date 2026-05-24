@@ -10,6 +10,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  Image,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -32,6 +33,7 @@ const groundstaffUri = Asset.fromModule(require("../../../assets/Groundstaff.svg
 const partyUri = Asset.fromModule(require("../../../assets/party.svg")).uri;
 const coachUri = Asset.fromModule(require("../../../assets/coach.svg")).uri;
 const lightbulbUri = Asset.fromModule(require("../../../assets/lightbulb.svg")).uri;
+const editUri = Asset.fromModule(require("../../../assets/Edit.svg")).uri;
 
 const ROLES = [
   {
@@ -132,6 +134,7 @@ const CreateProfessionalProfileScreen = () => {
   const [experienceText, setExperienceText] = useState("");
   const [certificateName, setCertificateName] = useState("");
   const [certificateFile, setCertificateFile] = useState(null);
+  const [certificates, setCertificates] = useState([]); // up to 3 files
   const [openToNegotiation, setOpenToNegotiation] = useState(true);
   const [successVisible, setSuccessVisible] = useState(false);
 
@@ -148,6 +151,10 @@ const CreateProfessionalProfileScreen = () => {
   };
 
   const pickCertificate = async () => {
+    if (certificates.length >= 3) {
+      Alert.alert("Limit reached", "You can upload up to 3 certificates.");
+      return;
+    }
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["application/pdf", "image/*"],
@@ -161,16 +168,14 @@ const CreateProfessionalProfileScreen = () => {
         Alert.alert("File too large", "Please choose a file under 5 MB.");
         return;
       }
-      setCertificateFile(file);
-      setCertificateName(file.name);
+      setCertificates((prev) => [...prev, file]);
     } catch (err) {
       Alert.alert("Upload failed", err?.message || "Could not pick file.");
     }
   };
 
-  const clearCertificate = () => {
-    setCertificateFile(null);
-    setCertificateName("");
+  const removeCertificate = (idx) => {
+    setCertificates((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const toggleAvailability = (id) => {
@@ -262,7 +267,7 @@ const CreateProfessionalProfileScreen = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Stepper Progress */}
@@ -393,8 +398,8 @@ const CreateProfessionalProfileScreen = () => {
             <View style={styles.tipBox}>
               <SvgUri
                 uri={lightbulbUri}
-                width={32}
-                height={32}
+                width={20}
+                height={20}
                 color="#0088FF"
                 style={styles.tipIcon}
               />
@@ -417,7 +422,7 @@ const CreateProfessionalProfileScreen = () => {
             {/* Languages Known Section (Chips) */}
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Languages Known</Text>
+                <Text style={styles.sectionTitle}>Sports Known</Text>
                 <Text style={styles.selectedCountText}>
                   {selectedSports.length} selected
                 </Text>
@@ -618,13 +623,13 @@ const CreateProfessionalProfileScreen = () => {
             </TouchableOpacity>
 
             {/* Experience & Portfolio sub-heading */}
-            <View style={styles.headingSection}>
+            <View style={[styles.headingSection, { marginBottom: 12 }]}>
               <Text style={styles.titleText}>Experience & Portfolio</Text>
               <Text style={styles.subtitleText}>Add details to build trust and credibility</Text>
             </View>
 
             {/* Tell us about your experience */}
-            <View style={styles.sectionContainer}>
+            <View style={[styles.sectionContainer, { marginBottom: 16 }]}>
               <Text style={styles.sectionTitle}>Tell us about your experience</Text>
               <TextInput
                 style={styles.experienceTextarea}
@@ -642,37 +647,59 @@ const CreateProfessionalProfileScreen = () => {
             {/* Certification (Optional) */}
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Certification (Optional)</Text>
-              <TouchableOpacity
-                style={styles.uploadBox}
-                activeOpacity={0.85}
-                onPress={pickCertificate}
-              >
-                <Ionicons
-                  name={certificateFile ? "document-attach-outline" : "ribbon-outline"}
-                  size={28}
-                  color="#4B5563"
-                />
-                <Text style={styles.uploadText} numberOfLines={1}>
-                  {certificateName || "Upload certificates"}
-                </Text>
-                {certificateFile && (
-                  <Text style={styles.uploadSubText}>Tap to replace</Text>
-                )}
-              </TouchableOpacity>
-              {certificateFile && (
+
+              {certificates.length === 0 ? (
                 <TouchableOpacity
-                  onPress={clearCertificate}
-                  activeOpacity={0.7}
-                  style={styles.removeFileBtn}
+                  style={styles.uploadBox}
+                  activeOpacity={0.85}
+                  onPress={pickCertificate}
                 >
-                  <Ionicons name="close-circle" size={16} color="#EF4444" />
-                  <Text style={styles.removeFileText}>Remove file</Text>
+                  <Ionicons name="ribbon-outline" size={28} color="#4B5563" />
+                  <Text style={styles.uploadText} numberOfLines={1}>
+                    Upload certificates
+                  </Text>
                 </TouchableOpacity>
+              ) : (
+                <View style={styles.certGrid}>
+                  {certificates.map((file, idx) => {
+                    const isImage = (file.mimeType || "").startsWith("image/");
+                    return (
+                      <View key={`${file.uri}-${idx}`} style={styles.certThumb}>
+                        {isImage ? (
+                          <Image source={{ uri: file.uri }} style={styles.certThumbImage} />
+                        ) : (
+                          <View style={styles.certThumbFile}>
+                            <Ionicons name="document-text-outline" size={28} color="#4B5563" />
+                            <Text style={styles.certThumbName} numberOfLines={2}>
+                              {file.name}
+                            </Text>
+                          </View>
+                        )}
+                        <TouchableOpacity
+                          style={styles.certThumbRemove}
+                          activeOpacity={0.7}
+                          onPress={() => removeCertificate(idx)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons name="close" size={14} color="#FFFFFF" />
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                  {certificates.length < 3 && (
+                    <TouchableOpacity
+                      style={[styles.certThumb, styles.certThumbAdd]}
+                      activeOpacity={0.7}
+                      onPress={pickCertificate}
+                    >
+                      <Ionicons name="add" size={28} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
+
               <Text style={styles.charCount}>
-                {certificateFile
-                  ? `${(certificateFile.size / 1024).toFixed(0)} KB · PDF/Image`
-                  : "PDF or image, up to 5 MB"}
+                {certificates.length}/3 files · PDF or image, up to 5 MB each
               </Text>
             </View>
 
@@ -681,7 +708,7 @@ const CreateProfessionalProfileScreen = () => {
               <Ionicons
                 name="checkmark-circle-outline"
                 size={22}
-                color="#1C64F2"
+                color="#0088FF"
                 style={{ marginTop: 1, marginRight: 10 }}
               />
               <View style={{ flex: 1 }}>
@@ -725,7 +752,9 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Professional Role</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(1)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewValueGreen}>{roleLabel}</Text>
@@ -736,7 +765,9 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Sports & Location</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(2)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewRow}>
@@ -754,7 +785,9 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Experience & Availability</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(3)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewRow}>
@@ -772,7 +805,9 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Pricing</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.pricingInner}>
@@ -794,7 +829,9 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>About Me</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewBody}>{experienceText || "—"}</Text>
@@ -805,10 +842,16 @@ const CreateProfessionalProfileScreen = () => {
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Certification (Optional)</Text>
                   <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <Feather name="edit-2" size={16} color="#4B5563" />
+                    <View style={{ width: 20, height: 20 }}>
+                      <SvgUri uri={editUri} width="100%" height="100%" />
+                    </View>
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.reviewBody}>{certificateName || "—"}</Text>
+                <Text style={styles.reviewBody}>
+                  {certificates.length
+                    ? certificates.map((c) => c.name).join(", ")
+                    : "—"}
+                </Text>
               </View>
 
               {/* Ready to Go Live banner */}
@@ -832,11 +875,16 @@ const CreateProfessionalProfileScreen = () => {
           );
         })()}
 
-        {/* Continue Button(s) */}
-        {currentStep === 3 || currentStep === 4 || currentStep === 5 ? (
+      </ScrollView>
+
+      {/* Sticky bottom CTA */}
+      <View style={[styles.stickyFooter, { paddingBottom: insets.bottom + 12 }]}>
+        {currentStep === 2 || currentStep === 3 || currentStep === 4 || currentStep === 5 ? (
           (() => {
             const stepDisabled =
-              currentStep === 3
+              currentStep === 2
+                ? false
+                : currentStep === 3
                 ? !selectedExperience
                 : currentStep === 4
                 ? !selectedRateType || !rateAmount.trim() || !experienceText.trim()
@@ -885,7 +933,7 @@ const CreateProfessionalProfileScreen = () => {
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+      </View>
 
       {/* Success Modal */}
       <Modal
@@ -963,6 +1011,12 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  stickyFooter: {
+    backgroundColor: "#FFFFFF",
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
   },
   stepperContainer: {
     flexDirection: "row",
@@ -1053,9 +1107,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     paddingHorizontal: 20,
     justifyContent: "space-between",
+    gap:16,
   },
   roleCard: {
-    width: 173,
+    width: 164,
     height: 86,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
@@ -1065,7 +1120,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     paddingBottom: 16,
     paddingLeft: 12,
-    marginBottom: 10,
+    marginBottom: 0,
     gap: 10,
     justifyContent: "flex-start",
     alignItems: "flex-start",
@@ -1106,31 +1161,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 20,
-    marginTop: 12,
+    marginTop: 24,
     marginBottom: 24,
   },
   tipIcon: {
-    marginRight: 12,
+    marginRight: 8,
   },
   tipText: {
     flex: 1,
-    fontFamily: "Montserrat_500Medium",
-    fontWeight: "500",
-    fontSize: 16,
-    lineHeight: 24,
+    fontFamily: "Poppins_400Regular",
+    fontWeight: "400",
+    fontSize: 12,
+    lineHeight: 17.4,
     letterSpacing: 0,
     color: "#0088FF",
     textAlign: "center",
   },
   tipTextBold: {
-    fontFamily: "Montserrat_700Bold",
-    fontWeight: "700",
+    fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 14,
+    lineHeight: 16,
+    letterSpacing: -0.15,
     color: "#0088FF",
   },
   continueButton: {
     backgroundColor: "#15A765",
-    height: 56,
-    borderRadius: 28,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 20,
@@ -1178,7 +1236,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     marginBottom: 4,
   },
   chipButtonActive: {
@@ -1197,7 +1255,7 @@ const styles = StyleSheet.create({
   cityInput: {
     backgroundColor: "#F3F4F6",
     borderRadius: 24,
-    height: 56,
+    height: 48,
     paddingHorizontal: 20,
     fontSize: 15,
     color: "#0A0A0A",
@@ -1206,11 +1264,11 @@ const styles = StyleSheet.create({
   // ── Step 3: Experience & Availability ──
   expCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#EFF1F5",
-    paddingHorizontal: 20,
-    paddingVertical: 18,
+    borderColor: "#DDDDDD",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   expCardSelected: {
     borderColor: "#FF8D28",
@@ -1218,17 +1276,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF4E5",
   },
   expTitle: {
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 14,
+    fontfamily: "Montserrat_600SemiBold",
     color: "#0A0A0A",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   expTitleSelected: {
     color: "#FF8D28",
   },
   expDuration: {
-    fontSize: 14,
-    color: "#8E9AA0",
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    color: "##666666",
   },
   availGrid: {
     flexDirection: "row",
@@ -1238,13 +1297,13 @@ const styles = StyleSheet.create({
   },
   availCard: {
     width: (width - 52) / 2,
-    minHeight: 110,
+    minHeight: 86,
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "#EFF1F5",
     paddingHorizontal: 18,
-    paddingVertical: 18,
+    paddingVertical: 16,
     alignItems: "flex-start",
     justifyContent: "space-between",
     shadowColor: "#000",
@@ -1259,9 +1318,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF4E5",
   },
   availLabel: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#0A0A0A",
+    fontSize: 16,
+    fontfamily: "Montserrat_500Medium",
+    color: "#1A181B",
     marginTop: 10,
     textAlign: "left",
     alignSelf: "flex-start",
@@ -1278,9 +1337,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backSquareBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
     borderColor: "#15A765",
@@ -1289,8 +1348,8 @@ const styles = StyleSheet.create({
   },
   continueButtonRow: {
     flex: 1,
-    height: 56,
-    borderRadius: 16,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: "#15A765",
     flexDirection: "row",
     alignItems: "center",
@@ -1305,15 +1364,15 @@ const styles = StyleSheet.create({
   },
   rateTypeCard: {
     flex: 1,
-    minHeight: 88,
+    minHeight: 86,
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#EFF1F5",
     paddingVertical: 14,
-    paddingHorizontal: 8,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -1336,7 +1395,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rateInput: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F2F2F2",
     borderRadius: 24,
     height: 48,
     paddingHorizontal: 20,
@@ -1347,18 +1406,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginHorizontal: 20,
-    marginTop: 4,
+    marginTop: 0,
     marginBottom: 24,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: "#F0F8FF",
   },
   negotiationCheckbox: {
     width: 22,
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: "#1C64F2",
+    borderColor: "#D6ECFF",
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
@@ -1366,18 +1425,19 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   negotiationCheckboxChecked: {
-    backgroundColor: "#1C64F2",
-    borderColor: "#1C64F2",
+    backgroundColor: "#0088FF",
+    borderColor: "#D6ECFF",
   },
   negotiationTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#1C64F2",
+    fontSize: 14,
+    fontfamily: "Montserrat_600SemiBold",
+    color: "#0088FF",
     marginBottom: 4,
   },
   negotiationBody: {
-    fontSize: 13,
-    color: "#1C64F2",
+    fontSize: 12,
+    fontfamily: "Poppins_400Regular",
+    color: "#0088FF",
     lineHeight: 18,
   },
 
@@ -1433,6 +1493,60 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontWeight: "600",
   },
+  certGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  certThumb: {
+    width: (width - 40 - 24) / 3,
+    aspectRatio: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#F9FAFB",
+    overflow: "hidden",
+    position: "relative",
+  },
+  certThumbImage: {
+    width: "100%",
+    height: "100%",
+  },
+  certThumbFile: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  certThumbName: {
+    fontSize: 10,
+    color: "#4B5563",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  certThumbRemove: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "rgba(239, 68, 68, 0.95)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  certThumbAdd: {
+    borderStyle: "dashed",
+    borderColor: "#D1D5DB",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
   verifiedBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -1442,63 +1556,84 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: "#F0F8FF",
+    borderWidth: 0.5,
+    borderColor: "#D6ECFF",
   },
   verifiedTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1C64F2",
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 16,
+    letterSpacing: -0.15,
+    color: "#0088FF",
     marginBottom: 4,
   },
   verifiedBody: {
-    fontSize: 14,
-    color: "#1C64F2",
-    lineHeight: 20,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#0088FF",
+    lineHeight: 17.4,
+    letterSpacing: 0,
   },
 
   // ── Step 5: Review ──
   reviewHeading: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   reviewTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#0A0A0A",
-    marginBottom: 6,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 16,
+    fontWeight: "500",
+    lineHeight: 16,
+    letterSpacing: 0,
+    color: "#1A181B",
+    marginBottom: 2,
   },
   reviewSubtitle: {
+    fontFamily: "Montserrat_500Medium",
     fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 14,
+    letterSpacing: 0,
     color: "#8D848F",
-    lineHeight: 20,
   },
   reviewCard: {
     marginHorizontal: 20,
-    marginBottom: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    borderRadius: 16,
+    marginBottom: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#EFF1F5",
+    borderColor: "#DDDDDD",
     backgroundColor: "#FFFFFF",
   },
   reviewCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   reviewCardTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#0A0A0A",
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 16,
+    fontWeight: "600",
+    lineHeight: 16,
+    letterSpacing: 0,
+    color: "#333333",
     flex: 1,
   },
   editIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#F3F4F6",
+    position: "absolute",
+    top: 10,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#F2F3F4",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1512,9 +1647,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   reviewValueGreen: {
-    color: "#15A765",
-    fontWeight: "700",
-    fontSize: 15,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#00BA00",
+    fontWeight: "600",
+    fontSize: 12,
+    lineHeight: 12,
+    letterSpacing: 0,
   },
   reviewBody: {
     fontSize: 14,
