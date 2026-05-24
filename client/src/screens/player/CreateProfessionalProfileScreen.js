@@ -188,12 +188,12 @@ const CreateProfessionalProfileScreen = () => {
   };
 
   const renderIcon = (role) => {
-    const color = selectedRole === role.id ? "#15A765" : "#333333";
+    const color = selectedRole === role.id ? "#FF8D28" : "#333333";
     return (
       <SvgUri
         uri={role.uri}
-        width={24}
-        height={24}
+        width={28}
+        height={28}
         color={color}
       />
     );
@@ -350,9 +350,9 @@ const CreateProfessionalProfileScreen = () => {
             <View style={styles.tipBox}>
               <SvgUri
                 uri={lightbulbUri}
-                width={20}
-                height={20}
-                color="#1877F2"
+                width={32}
+                height={32}
+                color="#0088FF"
                 style={styles.tipIcon}
               />
               <Text style={styles.tipText}>
@@ -708,15 +708,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
   },
   backButton: {
-    marginRight: 12,
+    marginRight: 10,
     padding: 4,
     marginLeft: -4,
   },
   headerTitle: {
+    fontFamily: "Montserrat_600SemiBold",
     fontSize: 18,
+    lineHeight: 22,
     color: "#0A0A0A",
     fontWeight: "600",
   },
@@ -727,74 +729,85 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 28,
-    marginTop: 8,
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 20,
   },
   completedStepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#15A765",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#1AC961",
     justifyContent: "center",
     alignItems: "center",
   },
   activeStepOuterRing: {
-    borderWidth: 1.5,
-    borderColor: "#FF8D28",
-    borderRadius: 24,
-    padding: 3,
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: "#FF8D2833",
     justifyContent: "center",
     alignItems: "center",
   },
   activeStepCircle: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 50,
     backgroundColor: "#FF8D28",
     justifyContent: "center",
     alignItems: "center",
   },
   activeStepText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
+    fontFamily: "Montserrat_700Bold",
   },
   inactiveStepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#F3F4F6",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EEEFF1",
     justifyContent: "center",
     alignItems: "center",
   },
   inactiveStepText: {
-    color: "#9CA3AF",
-    fontSize: 14,
-    fontWeight: "500",
+    color: "#B0B5BC",
+    fontSize: 16,
+    fontWeight: "700",
+    fontFamily: "Montserrat_700Bold",
   },
   stepperLine: {
     flex: 1,
-    height: 2,
-    backgroundColor: "#EFF1F5",
-    marginHorizontal: 8,
+    height: 3,
+    backgroundColor: "#EEEFF1",
+    marginHorizontal: 6,
+    borderRadius: 2,
   },
   stepperLineCompleted: {
-    backgroundColor: "#15A765",
+    backgroundColor: "#1AC961",
   },
   headingSection: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   titleText: {
-    fontSize: 20,
-    color: "#0A0A0A",
+    fontFamily: "Montserrat_600SemiBold",
     fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 24,
+    letterSpacing: 0,
+    color: "#1A181B",
+    marginBottom: 4,
   },
   subtitleText: {
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
     fontSize: 14,
-    color: "#8E9AA0",
-    marginTop: 4,
+    lineHeight: 14,
+    letterSpacing: 0,
+    color: "#8D848F",
   },
   gridContainer: {
     flexDirection: "row",
@@ -803,46 +816,56 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   roleCard: {
-    width: (width - 52) / 2,
-    height: 104,
+    width: (width - 56) / 2,
+    height: 110,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#EFF1F5",
-    padding: 16,
+    paddingTop: 18,
+    paddingRight: 16,
+    paddingBottom: 18,
+    paddingLeft: 16,
     marginBottom: 12,
-    justifyContent: "space-between",
+    gap: 14,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
   },
   roleCardSelected: {
-    borderColor: "#15A765",
+    borderColor: "#FF8D28",
     borderWidth: 1.5,
-    backgroundColor: "#F0FDF4",
+    backgroundColor: "#FFF4E5",
   },
   iconContainer: {
     alignSelf: "flex-start",
   },
   roleLabel: {
-    fontSize: 15,
+    fontFamily: "Montserrat_500Medium",
     fontWeight: "500",
+    fontSize: 18,
+    lineHeight: 22,
+    letterSpacing: 0,
     color: "#0A0A0A",
   },
   roleLabelSelected: {
-    color: "#15A765",
-    fontWeight: "600",
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    color: "#FF8D28",
   },
   tipBox: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#E5F0FF",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: 12,
     marginBottom: 24,
   },
   tipIcon: {
@@ -850,29 +873,38 @@ const styles = StyleSheet.create({
   },
   tipText: {
     flex: 1,
-    fontSize: 13,
-    color: "#1C64F2",
-    lineHeight: 18,
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 16,
+    lineHeight: 24,
+    letterSpacing: 0,
+    color: "#0088FF",
+    textAlign: "center",
   },
   tipTextBold: {
+    fontFamily: "Montserrat_700Bold",
     fontWeight: "700",
+    color: "#0088FF",
   },
   continueButton: {
     backgroundColor: "#15A765",
     height: 56,
-    borderRadius: 16,
+    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: 12,
+    marginBottom: 12,
   },
   continueButtonDisabled: {
     backgroundColor: "#A7F3D0",
   },
   continueButtonText: {
+    fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "500",
   },
   // Step 2 specific styles
   sectionContainer: {

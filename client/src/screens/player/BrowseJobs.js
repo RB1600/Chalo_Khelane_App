@@ -25,6 +25,7 @@ const refereeUri = Asset.fromModule(require("../../../assets/Referee.svg")).uri;
 const filterUri = Asset.fromModule(require("../../../assets/filter.svg")).uri;
 const calenderUri = Asset.fromModule(require("../../../assets/calender.svg")).uri;
 const envelopeUri = Asset.fromModule(require("../../../assets/envelope.svg")).uri;
+const starUri = Asset.fromModule(require("../../../assets/star.svg")).uri;
 
 const { width } = Dimensions.get("window");
 
@@ -154,8 +155,8 @@ const SUB_TABS = [
 const PROFILE_STATS = [
   { key: "earnings", label: "Total Earnings", value: "₹1,25,000", sub: "All Time", valueColor: "#258C3F" },
   { key: "month", label: "This Month", value: "₹1,25,000", sub: "↗ 25% from last month", valueColor: "#258C3F" },
-  { key: "rating", label: "Rating", value: "4.8", sub: "42 Reviews", isRating: true },
-  { key: "jobs", label: "Total Jobs", value: "45", sub: "Completed" },
+  { key: "rating", label: "Rating", value: "4.8", sub: "42 Reviews", isRating: true, valueColor: "#666666" },
+  { key: "jobs", label: "Total Jobs", value: "45", sub: "Completed", valueColor: "#666666" },
 ];
 
 const PROFILE_JOBS = {
@@ -277,7 +278,7 @@ const PROFILE_JOB_TABS = [
 ];
 
 const JOB_STATUS_STYLES = {
-  Confirmed: { bg: "#DBEAFE", text: "#1447E6", icon: "checkmark-circle-outline" },
+  Confirmed: { bg: "#E5F3FF", text: "#007DEB", icon: "checkmark-outline" },
   "In Progress": { bg: "#FFEFD5", text: "#D97706", icon: "time-outline" },
   Completed: { bg: "#D7F4E1", text: "#1A8E4A", icon: "checkmark-done-outline" },
 };
@@ -882,7 +883,10 @@ const BrowseJobs = () => {
 
           <ScrollView
             style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-            contentContainerStyle={{ paddingBottom: 30 }}
+            contentContainerStyle={{
+              paddingBottom:
+                activeSubTab === "myProfile" && profileTab === "profile" ? 120 : 30,
+            }}
             showsVerticalScrollIndicator={false}
           >
             {activeSubTab === "applications" && (
@@ -984,10 +988,10 @@ const BrowseJobs = () => {
                             <Text style={styles.profileStatLabel}>{s.label}</Text>
                             <View style={styles.profileStatValueRow}>
                               {s.isRating && (
-                                <Ionicons
-                                  name="star"
-                                  size={18}
-                                  color="#F5B400"
+                                <SvgUri
+                                  uri={starUri}
+                                  width={18}
+                                  height={18}
                                   style={{ marginRight: 4 }}
                                 />
                               )}
@@ -1272,22 +1276,31 @@ const BrowseJobs = () => {
                       })}
                     </View>
 
-                    {/* Create Professional Profile CTA */}
-                    <TouchableOpacity
-                      style={styles.createProfileBtn}
-                      activeOpacity={0.9}
-                      onPress={() => navigation.navigate("CreateProfessionalProfile")}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                      <Text style={styles.createProfileBtnText}>
-                        Create Professional Profile
-                      </Text>
-                    </TouchableOpacity>
                   </View>
                 )}
               </View>
             )}
           </ScrollView>
+
+          {/* Sticky Create Professional Profile CTA */}
+          {activeSubTab === "myProfile" && profileTab === "profile" && (
+            <View
+              style={[
+                styles.createProfileBar,
+                { paddingBottom: insets.bottom > 0 ? insets.bottom : 12 },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.createProfileBtn}
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate("CreateProfessionalProfile")}
+              >
+                <Text style={styles.createProfileBtnText}>
+                  Create Professional Profile
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       ) : (
         <ScrollView
@@ -2441,25 +2454,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   profileStatLabel: {
-    fontSize: 13,
-    fontFamily: "Montserrat_500Medium",
-    color: "#1F1F1F",
+    fontFamily: "Montserrat_400Regular",
+    fontWeight: "400",
+    fontSize: 16,
+    lineHeight: 16,
+    letterSpacing: 0,
+    color: "#333333",
     marginBottom: 6,
   },
   profileStatValueRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   profileStatValue: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#1F1F1F",
+    fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: "#15A765",
   },
   profileStatSub: {
-    fontSize: 11,
     fontFamily: "Montserrat_400Regular",
-    color: "#6F6F6F",
+    fontWeight: "400",
+    fontSize: 12,
+    lineHeight: 12,
+    letterSpacing: 0,
+    color: "#666666",
   },
   jobTabsRow: {
     flexDirection: "row",
@@ -2513,33 +2535,47 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   profileJobTitle: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#0A0A0A",
+    fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 20,
+    letterSpacing: -0.31,
+    color: "#1A181B",
   },
   profileJobEvent: {
-    fontSize: 13,
-    fontFamily: "Montserrat_500Medium",
-    color: "#453E4C",
+    fontFamily: "Montserrat_400Regular",
+    fontWeight: "400",
+    fontSize: 14,
+    lineHeight: 14,
+    letterSpacing: 0,
+    color: "#333333",
     marginTop: 4,
   },
   profileJobOrg: {
-    fontSize: 12,
     fontFamily: "Montserrat_400Regular",
-    color: "#7A7A7A",
+    fontWeight: "400",
+    fontSize: 12,
+    lineHeight: 12,
+    letterSpacing: 0,
+    color: "#666666",
     marginTop: 2,
+    marginBottom: 12,
   },
   profileStatusBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 999,
   },
   profileStatusText: {
-    fontSize: 11,
     fontFamily: "Poppins_500Medium",
+    fontWeight: "500",
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0,
+    textAlignVertical: "center",
   },
   profileJobMeta: {
     marginTop: 12,
@@ -2551,15 +2587,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   profileJobMetaText: {
-    fontSize: 13,
-    fontFamily: "Montserrat_500Medium",
-    color: "#453E4C",
+    fontFamily: "Poppins_400Regular",
+    fontWeight: "400",
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: "#1A181B",
+    textAlignVertical: "center",
   },
   profileJobRate: {
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
-    color: "#258C3F",
+    fontFamily: "Montserrat_600SemiBold",
+    fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 20,
+    letterSpacing: 0,
+    color: "#15A765",
     marginTop: 12,
+    marginBottom: 12,
   },
   profileJobActions: {
     flexDirection: "row",
@@ -2794,10 +2838,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
   },
+  createProfileBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#FFFFFF",
+    borderTopWidth: 1,
+    borderTopColor: "#EFEFEF",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
   createProfileBtn: {
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 24,
     height: 52,
     borderRadius: 12,
     backgroundColor: "#15A765",
