@@ -8,12 +8,15 @@ import {
   Dimensions,
   StatusBar,
   TextInput,
+  Modal,
+  Alert,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SvgUri } from "react-native-svg";
 import { Asset } from "expo-asset";
+import * as DocumentPicker from "expo-document-picker";
 
 const { width } = Dimensions.get("window");
 
@@ -26,6 +29,7 @@ const eventstaffUri = Asset.fromModule(require("../../../assets/eventstaff.svg")
 const physiotherapyUri = Asset.fromModule(require("../../../assets/Physiotherapy.svg")).uri;
 const photographerUri = Asset.fromModule(require("../../../assets/photographer.svg")).uri;
 const groundstaffUri = Asset.fromModule(require("../../../assets/Groundstaff.svg")).uri;
+const partyUri = Asset.fromModule(require("../../../assets/party.svg")).uri;
 const coachUri = Asset.fromModule(require("../../../assets/coach.svg")).uri;
 const lightbulbUri = Asset.fromModule(require("../../../assets/lightbulb.svg")).uri;
 
@@ -127,6 +131,47 @@ const CreateProfessionalProfileScreen = () => {
   const [rateAmount, setRateAmount] = useState("");
   const [experienceText, setExperienceText] = useState("");
   const [certificateName, setCertificateName] = useState("");
+  const [certificateFile, setCertificateFile] = useState(null);
+  const [openToNegotiation, setOpenToNegotiation] = useState(true);
+  const [successVisible, setSuccessVisible] = useState(false);
+
+  const roleNameMap = {
+    referee: "Referee",
+    coach: "Trainer",
+    scorer: "Scorer",
+    cameraman: "Cameraman",
+    commentator: "Commentator",
+    eventstaff: "Event Staff",
+    physiotherapy: "Physiotherapist",
+    photographer: "Photographer",
+    groundstaff: "Ground Staff",
+  };
+
+  const pickCertificate = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (result.canceled) return;
+      const file = result.assets?.[0];
+      if (!file) return;
+      if (file.size && file.size > 5 * 1024 * 1024) {
+        Alert.alert("File too large", "Please choose a file under 5 MB.");
+        return;
+      }
+      setCertificateFile(file);
+      setCertificateName(file.name);
+    } catch (err) {
+      Alert.alert("Upload failed", err?.message || "Could not pick file.");
+    }
+  };
+
+  const clearCertificate = () => {
+    setCertificateFile(null);
+    setCertificateName("");
+  };
 
   const toggleAvailability = (id) => {
     setSelectedAvailability((prev) =>
@@ -150,10 +195,8 @@ const CreateProfessionalProfileScreen = () => {
     } else if (currentStep === 3) {
       if (selectedExperience) setCurrentStep(4);
     } else if (currentStep === 4) {
-      if (selectedRateType && rateAmount.trim()) setCurrentStep(5);
+      if (selectedRateType && rateAmount.trim() && experienceText.trim()) setCurrentStep(5);
     } else if (currentStep === 5) {
-      if (experienceText.trim()) setCurrentStep(6);
-    } else if (currentStep === 6) {
       console.log("Profile created:", {
         selectedRole,
         selectedSports,
@@ -162,9 +205,11 @@ const CreateProfessionalProfileScreen = () => {
         selectedAvailability,
         selectedRateType,
         rateAmount,
+        openToNegotiation,
         experienceText,
         certificateName,
       });
+      setSuccessVisible(true);
     }
   };
 
@@ -192,8 +237,8 @@ const CreateProfessionalProfileScreen = () => {
     return (
       <SvgUri
         uri={role.uri}
-        width={28}
-        height={28}
+        width={24}
+        height={24}
         color={color}
       />
     );
@@ -221,7 +266,6 @@ const CreateProfessionalProfileScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Stepper Progress */}
-        {currentStep !== 6 && (
         <View style={styles.stepperContainer}>
           {/* Step 1 */}
           {currentStep > 1 ? (
@@ -308,7 +352,6 @@ const CreateProfessionalProfileScreen = () => {
             </View>
           )}
         </View>
-        )}
 
         {currentStep === 1 && (
           <>
@@ -480,8 +523,8 @@ const CreateProfessionalProfileScreen = () => {
                     >
                       <Ionicons
                         name={opt.icon}
-                        size={22}
-                        color={isSelected ? "#15A765" : "#4B5563"}
+                        size={26}
+                        color={isSelected ? "#FF8D28" : "#4B5563"}
                       />
                       <Text
                         style={[
@@ -526,7 +569,7 @@ const CreateProfessionalProfileScreen = () => {
                       <Ionicons
                         name={rt.icon}
                         size={26}
-                        color={isSelected ? "#15A765" : "#4B5563"}
+                        color={isSelected ? "#FF8D28" : "#4B5563"}
                       />
                       <Text
                         style={[
@@ -556,18 +599,25 @@ const CreateProfessionalProfileScreen = () => {
             </View>
 
             {/* Open to Negotiation banner */}
-            <View style={styles.negotiationBanner}>
-              <Text style={styles.negotiationTitle}>Open to Negotiation</Text>
-              <Text style={styles.negotiationBody}>
-                Allow clients to discuss and negotiate rates based on event requirements
-              </Text>
-            </View>
-          </>
-        )}
+            <TouchableOpacity
+              style={styles.negotiationBanner}
+              activeOpacity={0.85}
+              onPress={() => setOpenToNegotiation((v) => !v)}
+            >
+              <View style={[styles.negotiationCheckbox, openToNegotiation && styles.negotiationCheckboxChecked]}>
+                {openToNegotiation && (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                )}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.negotiationTitle}>Open to Negotiation</Text>
+                <Text style={styles.negotiationBody}>
+                  Allow clients to discuss and negotiate rates based on event requirements
+                </Text>
+              </View>
+            </TouchableOpacity>
 
-        {currentStep === 5 && (
-          <>
-            {/* Step 5 Heading */}
+            {/* Experience & Portfolio sub-heading */}
             <View style={styles.headingSection}>
               <Text style={styles.titleText}>Experience & Portfolio</Text>
               <Text style={styles.subtitleText}>Add details to build trust and credibility</Text>
@@ -595,24 +645,42 @@ const CreateProfessionalProfileScreen = () => {
               <TouchableOpacity
                 style={styles.uploadBox}
                 activeOpacity={0.85}
-                onPress={() => {
-                  /* file picker hook-up TBD */
-                  setCertificateName(certificateName ? "" : "certificate.pdf");
-                }}
+                onPress={pickCertificate}
               >
-                <Ionicons name="ribbon-outline" size={26} color="#4B5563" />
-                <Text style={styles.uploadText}>
+                <Ionicons
+                  name={certificateFile ? "document-attach-outline" : "ribbon-outline"}
+                  size={28}
+                  color="#4B5563"
+                />
+                <Text style={styles.uploadText} numberOfLines={1}>
                   {certificateName || "Upload certificates"}
                 </Text>
+                {certificateFile && (
+                  <Text style={styles.uploadSubText}>Tap to replace</Text>
+                )}
               </TouchableOpacity>
-              <Text style={styles.charCount}>{certificateName.length}/500 characters</Text>
+              {certificateFile && (
+                <TouchableOpacity
+                  onPress={clearCertificate}
+                  activeOpacity={0.7}
+                  style={styles.removeFileBtn}
+                >
+                  <Ionicons name="close-circle" size={16} color="#EF4444" />
+                  <Text style={styles.removeFileText}>Remove file</Text>
+                </TouchableOpacity>
+              )}
+              <Text style={styles.charCount}>
+                {certificateFile
+                  ? `${(certificateFile.size / 1024).toFixed(0)} KB · PDF/Image`
+                  : "PDF or image, up to 5 MB"}
+              </Text>
             </View>
 
             {/* Get Verified banner */}
             <View style={styles.verifiedBanner}>
               <Ionicons
-                name="checkmark-circle"
-                size={20}
+                name="checkmark-circle-outline"
+                size={22}
                 color="#1C64F2"
                 style={{ marginTop: 1, marginRight: 10 }}
               />
@@ -627,31 +695,154 @@ const CreateProfessionalProfileScreen = () => {
           </>
         )}
 
-        {currentStep === 6 && (
-          <>
-            {/* Preview Heading */}
-            <View style={styles.headingSection}>
-              <Text style={styles.titleText}>Preview</Text>
-              <Text style={styles.subtitleText}>Add details to build trust and credibility</Text>
-            </View>
+        {currentStep === 5 && (() => {
+          const roleLabel = ROLES.find((r) => r.id === selectedRole)?.label || "—";
+          const sportsLabel = (() => {
+            const names = selectedSports.map((s) => s.includes("-") ? s.split("-")[0] : s);
+            const unique = [...new Set(names)];
+            return unique.length ? unique.join(", ") : "—";
+          })();
+          const expObj = EXPERIENCE_LEVELS.find((e) => e.id === selectedExperience);
+          const expLabel = expObj ? `${expObj.label} /${expObj.duration}` : "—";
+          const availLabel = selectedAvailability
+            .map((id) => AVAILABILITY_OPTIONS.find((a) => a.id === id)?.label)
+            .filter(Boolean)
+            .join(", ") || "—";
+          const rateTypeLabel = RATE_TYPES.find((r) => r.id === selectedRateType)?.label || "";
 
-            <View style={styles.previewBody} />
-          </>
-        )}
+          return (
+            <>
+              {/* Preview Heading */}
+              <View style={styles.reviewHeading}>
+                <Text style={styles.reviewTitle}>Review your Profile</Text>
+                <Text style={styles.reviewSubtitle}>
+                  Please review all details before creating your professional account
+                </Text>
+              </View>
+
+              {/* Professional Role */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>Professional Role</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(1)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.reviewValueGreen}>{roleLabel}</Text>
+              </View>
+
+              {/* Sports & Location */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>Sports & Location</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(2)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.reviewRow}>
+                  <Text style={styles.reviewKey}>Sports : </Text>
+                  <Text style={styles.reviewValueGreen}>{sportsLabel}</Text>
+                </Text>
+                <Text style={styles.reviewRow}>
+                  <Text style={styles.reviewKey}>Location : </Text>
+                  <Text style={styles.reviewValueGreen}>{city || "—"}</Text>
+                </Text>
+              </View>
+
+              {/* Experience & Availability */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>Experience & Availability</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(3)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.reviewRow}>
+                  <Text style={styles.reviewKey}>Experience Level : </Text>
+                  <Text style={styles.reviewValueGreen}>{expLabel}</Text>
+                </Text>
+                <Text style={styles.reviewRow}>
+                  <Text style={styles.reviewKey}>Availability : </Text>
+                  <Text style={styles.reviewValueGreen}>{availLabel}</Text>
+                </Text>
+              </View>
+
+              {/* Pricing */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>Pricing</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.pricingInner}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pricingLabel}>Your Rate</Text>
+                    <Text style={styles.pricingAmount}>
+                      ₹{rateAmount || "0"}
+                      <Text style={styles.pricingPer}>  {rateTypeLabel}</Text>
+                    </Text>
+                  </View>
+                  {openToNegotiation && (
+                    <Text style={styles.negotiableBadge}>Negotiable</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* About Me */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>About Me</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.reviewBody}>{experienceText || "—"}</Text>
+              </View>
+
+              {/* Certification */}
+              <View style={styles.reviewCard}>
+                <View style={styles.reviewCardHeader}>
+                  <Text style={styles.reviewCardTitle}>Certification (Optional)</Text>
+                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                    <Feather name="edit-2" size={16} color="#4B5563" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.reviewBody}>{certificateName || "—"}</Text>
+              </View>
+
+              {/* Ready to Go Live banner */}
+              <View style={styles.verifiedBanner}>
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={22}
+                  color="#1C64F2"
+                  style={{ marginTop: 1, marginRight: 10 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.verifiedTitle}>Ready to Go Live!</Text>
+                  <Text style={styles.verifiedBody}>
+                    Once you create your profile, it will be visible to players and
+                    organizers looking to hire professionals. You'll start receiving job
+                    opportunities and hire requests.
+                  </Text>
+                </View>
+              </View>
+            </>
+          );
+        })()}
 
         {/* Continue Button(s) */}
-        {currentStep === 3 || currentStep === 4 || currentStep === 5 || currentStep === 6 ? (
+        {currentStep === 3 || currentStep === 4 || currentStep === 5 ? (
           (() => {
             const stepDisabled =
               currentStep === 3
                 ? !selectedExperience
                 : currentStep === 4
-                ? !selectedRateType || !rateAmount.trim()
-                : currentStep === 5
-                ? !experienceText.trim()
+                ? !selectedRateType || !rateAmount.trim() || !experienceText.trim()
                 : false;
             const ctaLabel =
-              currentStep === 5 || currentStep === 6 ? "Create Profile" : "Continue";
+              currentStep === 5 ? "Create Professional Profile" : "Continue";
             return (
               <View style={styles.bottomRow}>
                 <TouchableOpacity
@@ -695,6 +886,54 @@ const CreateProfessionalProfileScreen = () => {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Success Modal */}
+      <Modal
+        visible={successVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSuccessVisible(false)}
+      >
+        <View style={styles.successBackdrop}>
+          <View style={styles.successCard}>
+            <SvgUri
+              uri={partyUri}
+              width={160}
+              height={160}
+              style={styles.successImage}
+            />
+            <Text style={styles.successTitle}>
+              You're Now a {roleNameMap[selectedRole] || "Professional"}!
+            </Text>
+            <Text style={styles.successBody}>
+              Your {roleNameMap[selectedRole]?.toLowerCase() || "professional"} profile is ready.{"\n"}
+              What would you like to do next?
+            </Text>
+            <View style={styles.successButtonRow}>
+              <TouchableOpacity
+                style={styles.successSecondaryBtn}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSuccessVisible(false);
+                  navigation.goBack();
+                }}
+              >
+                <Text style={styles.successSecondaryText}>View Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.successPrimaryBtn}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSuccessVisible(false);
+                  navigation.navigate("BrowseJobs");
+                }}
+              >
+                <Text style={styles.successPrimaryText}>Browse job</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -793,13 +1032,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   titleText: {
-    fontFamily: "Montserrat_600SemiBold",
-    fontWeight: "600",
-    fontSize: 20,
-    lineHeight: 24,
+    fontFamily: "Montserrat_500Medium",
+    fontWeight: "500",
+    fontSize: 16,
+    lineHeight: 16,
     letterSpacing: 0,
     color: "#1A181B",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitleText: {
     fontFamily: "Montserrat_500Medium",
@@ -816,18 +1055,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   roleCard: {
-    width: (width - 56) / 2,
-    height: 110,
+    width: 173,
+    height: 86,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#EFF1F5",
-    paddingTop: 18,
-    paddingRight: 16,
-    paddingBottom: 18,
-    paddingLeft: 16,
-    marginBottom: 12,
-    gap: 14,
+    paddingTop: 16,
+    paddingRight: 12,
+    paddingBottom: 16,
+    paddingLeft: 12,
+    marginBottom: 10,
+    gap: 10,
     justifyContent: "flex-start",
     alignItems: "flex-start",
     shadowColor: "#000",
@@ -845,10 +1084,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   roleLabel: {
+    width: 147,
+    height: 18,
     fontFamily: "Montserrat_500Medium",
     fontWeight: "500",
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 18,
     letterSpacing: 0,
     color: "#0A0A0A",
   },
@@ -941,16 +1182,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   chipButtonActive: {
-    backgroundColor: "#EAFDF4",
+    backgroundColor: "#FFF4E5",
     borderWidth: 1,
-    borderColor: "#15A765",
+    borderColor: "#FF8D28",
   },
   chipText: {
     color: "#6B7280",
     fontSize: 14,
   },
   chipTextActive: {
-    color: "#15A765",
+    color: "#FF8D28",
     fontWeight: "600",
   },
   cityInput: {
@@ -965,28 +1206,28 @@ const styles = StyleSheet.create({
   // ── Step 3: Experience & Availability ──
   expCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#EFF1F5",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
   expCardSelected: {
-    borderColor: "#15A765",
+    borderColor: "#FF8D28",
     borderWidth: 1.5,
-    backgroundColor: "#F0FDF4",
+    backgroundColor: "#FFF4E5",
   },
   expTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 17,
+    fontWeight: "700",
     color: "#0A0A0A",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   expTitleSelected: {
-    color: "#15A765",
+    color: "#FF8D28",
   },
   expDuration: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#8E9AA0",
   },
   availGrid: {
@@ -997,13 +1238,14 @@ const styles = StyleSheet.create({
   },
   availCard: {
     width: (width - 52) / 2,
-    minHeight: 88,
+    minHeight: 110,
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#EFF1F5",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    alignItems: "flex-start",
     justifyContent: "space-between",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -1012,18 +1254,20 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   availCardSelected: {
-    borderColor: "#15A765",
+    borderColor: "#FF8D28",
     borderWidth: 1.5,
-    backgroundColor: "#F0FDF4",
+    backgroundColor: "#FFF4E5",
   },
   availLabel: {
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 17,
+    fontWeight: "600",
     color: "#0A0A0A",
-    marginTop: 8,
+    marginTop: 10,
+    textAlign: "left",
+    alignSelf: "flex-start",
   },
   availLabelSelected: {
-    color: "#15A765",
+    color: "#FF8D28",
     fontWeight: "600",
   },
   bottomRow: {
@@ -1077,9 +1321,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   rateTypeCardSelected: {
-    borderColor: "#15A765",
+    borderColor: "#FF8D28",
     borderWidth: 1.5,
-    backgroundColor: "#F0FDF4",
+    backgroundColor: "#FFF4E5",
   },
   rateTypeLabel: {
     fontSize: 14,
@@ -1088,7 +1332,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   rateTypeLabelSelected: {
-    color: "#15A765",
+    color: "#FF8D28",
     fontWeight: "600",
   },
   rateInput: {
@@ -1100,15 +1344,33 @@ const styles = StyleSheet.create({
     color: "#0A0A0A",
   },
   negotiationBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginHorizontal: 20,
     marginTop: 4,
     marginBottom: 24,
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: "#EFF6FF",
   },
+  negotiationCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#1C64F2",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    marginTop: 1,
+  },
+  negotiationCheckboxChecked: {
+    backgroundColor: "#1C64F2",
+    borderColor: "#1C64F2",
+  },
   negotiationTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
     color: "#1C64F2",
     marginBottom: 4,
@@ -1151,6 +1413,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4B5563",
     marginTop: 8,
+    maxWidth: "90%",
+  },
+  uploadSubText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 4,
+  },
+  removeFileBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 8,
+    paddingVertical: 4,
+  },
+  removeFileText: {
+    fontSize: 12,
+    color: "#EF4444",
+    marginLeft: 6,
+    fontWeight: "600",
   },
   verifiedBanner: {
     flexDirection: "row",
@@ -1158,25 +1439,192 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 4,
     marginBottom: 24,
-    padding: 14,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
     backgroundColor: "#EFF6FF",
   },
   verifiedTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     color: "#1C64F2",
     marginBottom: 4,
   },
   verifiedBody: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#1C64F2",
-    lineHeight: 18,
+    lineHeight: 20,
   },
 
-  // ── Step 6: Preview ──
-  previewBody: {
-    minHeight: 360,
+  // ── Step 5: Review ──
+  reviewHeading: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  reviewTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0A0A0A",
+    marginBottom: 6,
+  },
+  reviewSubtitle: {
+    fontSize: 14,
+    color: "#8D848F",
+    lineHeight: 20,
+  },
+  reviewCard: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EFF1F5",
+    backgroundColor: "#FFFFFF",
+  },
+  reviewCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  reviewCardTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#0A0A0A",
+    flex: 1,
+  },
+  editIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reviewRow: {
+    fontSize: 14,
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  reviewKey: {
+    color: "#0A0A0A",
+    fontWeight: "500",
+  },
+  reviewValueGreen: {
+    color: "#15A765",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  reviewBody: {
+    fontSize: 14,
+    color: "#6B7280",
+    lineHeight: 20,
+  },
+  pricingInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E8FBEF",
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    marginTop: 4,
+  },
+  pricingLabel: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginBottom: 6,
+  },
+  pricingAmount: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#0A0A0A",
+  },
+  pricingPer: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#4B5563",
+  },
+  negotiableBadge: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#15A765",
+    marginLeft: 12,
+  },
+
+  // ── Success Modal ──
+  successBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+  successCard: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingTop: 24,
+    paddingBottom: 22,
+    paddingHorizontal: 22,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  successImage: {
+    width: 160,
+    height: 160,
+    marginBottom: 8,
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#0A0A0A",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  successBody: {
+    fontSize: 14,
+    color: "#4B5563",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 22,
+  },
+  successButtonRow: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+  },
+  successSecondaryBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#15A765",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successSecondaryText: {
+    color: "#15A765",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  successPrimaryBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#15A765",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successPrimaryText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });
 
