@@ -34,6 +34,8 @@ const partyUri = Asset.fromModule(require("../../../assets/party.svg")).uri;
 const coachUri = Asset.fromModule(require("../../../assets/coach.svg")).uri;
 const lightbulbUri = Asset.fromModule(require("../../../assets/lightbulb.svg")).uri;
 const editUri = Asset.fromModule(require("../../../assets/Edit.svg")).uri;
+const flexibleUri = Asset.fromModule(require("../../../assets/flexible.svg")).uri;
+const calendarStarUri = Asset.fromModule(require("../../../assets/calendar-star 1.svg")).uri;
 
 const ROLES = [
   {
@@ -526,11 +528,27 @@ const CreateProfessionalProfileScreen = () => {
                       activeOpacity={0.85}
                       onPress={() => toggleAvailability(opt.id)}
                     >
-                      <Ionicons
-                        name={opt.icon}
-                        size={26}
-                        color={isSelected ? "#FF8D28" : "#4B5563"}
-                      />
+                      {opt.id === "flexible_hours" ? (
+                        <SvgUri
+                          uri={flexibleUri}
+                          width={24}
+                          height={24}
+                          color={isSelected ? "#FF8D28" : "#666666"}
+                        />
+                      ) : opt.id === "event_based" ? (
+                        <SvgUri
+                          uri={calendarStarUri}
+                          width={24}
+                          height={24}
+                          color={isSelected ? "#FF8D28" : "#666666"}
+                        />
+                      ) : (
+                        <Ionicons
+                          name={opt.icon}
+                          size={24}
+                          color={isSelected ? "#FF8D28" : "#666666"}
+                        />
+                      )}
                       <Text
                         style={[
                           styles.availLabel,
