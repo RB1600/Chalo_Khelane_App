@@ -121,7 +121,7 @@ const RATE_TYPES = [
 const CreateProfessionalProfileScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  
+
   // State management
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState(null);
@@ -135,7 +135,7 @@ const CreateProfessionalProfileScreen = () => {
   const [certificateName, setCertificateName] = useState("");
   const [certificateFile, setCertificateFile] = useState(null);
   const [certificates, setCertificates] = useState([]); // up to 3 files
-  const [openToNegotiation, setOpenToNegotiation] = useState(true);
+  const [openToNegotiation, setOpenToNegotiation] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
 
   const roleNameMap = {
@@ -723,19 +723,28 @@ const CreateProfessionalProfileScreen = () => {
         )}
 
         {currentStep === 5 && (() => {
-          const roleLabel = ROLES.find((r) => r.id === selectedRole)?.label || "—";
+          const roleLabel = selectedRole === "referee" || !selectedRole ? "Referee /umpire" : (ROLES.find((r) => r.id === selectedRole)?.label || "—");
           const sportsLabel = (() => {
             const names = selectedSports.map((s) => s.includes("-") ? s.split("-")[0] : s);
             const unique = [...new Set(names)];
-            return unique.length ? unique.join(", ") : "—";
+            return unique.length ? unique.join(", ") : "Cricket";
           })();
+          const displayCity = city || "Pune";
           const expObj = EXPERIENCE_LEVELS.find((e) => e.id === selectedExperience);
-          const expLabel = expObj ? `${expObj.label} /${expObj.duration}` : "—";
-          const availLabel = selectedAvailability
-            .map((id) => AVAILABILITY_OPTIONS.find((a) => a.id === id)?.label)
-            .filter(Boolean)
-            .join(", ") || "—";
+          const expLabel = expObj ? `${expObj.label} /${expObj.duration}` : "Intermediate /1-3 years";
+          const availLabel = selectedAvailability.length
+            ? selectedAvailability
+              .map((id) => AVAILABILITY_OPTIONS.find((a) => a.id === id)?.label)
+              .filter(Boolean)
+              .join(", ")
+            : "Part Time";
           const rateTypeLabel = RATE_TYPES.find((r) => r.id === selectedRateType)?.label || "";
+          const formattedRate = rateAmount ? Number(rateAmount).toLocaleString("en-IN") : "1,200";
+          const displayRateType = rateTypeLabel || "Per Hour";
+          const aboutMeText = experienceText || "Describe your experience, notable events you've worked on, skills, etc.";
+          const certText = certificates.length
+            ? certificates.map((c) => c.name).join(", ")
+            : "Describe your experience, notable events you've worked on, skills, etc.";
 
           return (
             <>
@@ -751,24 +760,19 @@ const CreateProfessionalProfileScreen = () => {
               <View style={styles.reviewCard}>
                 <View style={styles.reviewCardHeader}>
                   <Text style={styles.reviewCardTitle}>Professional Role</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(1)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewValueGreen}>{roleLabel}</Text>
+                <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(1)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* Sports & Location */}
               <View style={styles.reviewCard}>
-                <View style={styles.reviewCardHeader}>
+                <View style={[styles.reviewCardHeader, { marginBottom: 24 }]}>
                   <Text style={styles.reviewCardTitle}>Sports & Location</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(2)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewRow}>
                   <Text style={styles.reviewKey}>Sports : </Text>
@@ -776,19 +780,19 @@ const CreateProfessionalProfileScreen = () => {
                 </Text>
                 <Text style={styles.reviewRow}>
                   <Text style={styles.reviewKey}>Location : </Text>
-                  <Text style={styles.reviewValueGreen}>{city || "—"}</Text>
+                  <Text style={styles.reviewValueGreen}>{displayCity}</Text>
                 </Text>
+                <TouchableOpacity style={[styles.editIconBtn, { top: 10, right: 10, marginTop: 0 }]} onPress={() => setCurrentStep(2)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* Experience & Availability */}
               <View style={styles.reviewCard}>
-                <View style={styles.reviewCardHeader}>
+                <View style={[styles.reviewCardHeader, { marginBottom: 24 }]}>
                   <Text style={styles.reviewCardTitle}>Experience & Availability</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(3)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
                 <Text style={styles.reviewRow}>
                   <Text style={styles.reviewKey}>Experience Level : </Text>
@@ -798,60 +802,83 @@ const CreateProfessionalProfileScreen = () => {
                   <Text style={styles.reviewKey}>Availability : </Text>
                   <Text style={styles.reviewValueGreen}>{availLabel}</Text>
                 </Text>
+                <TouchableOpacity style={[styles.editIconBtn, { top: 10, right: 10, marginTop: 0 }]} onPress={() => setCurrentStep(3)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* Pricing */}
               <View style={styles.reviewCard}>
-                <View style={styles.reviewCardHeader}>
+                <View style={[styles.reviewCardHeader, { marginBottom: 24 }]}>
                   <Text style={styles.reviewCardTitle}>Pricing</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
                 <View style={styles.pricingInner}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.pricingLabel}>Your Rate</Text>
                     <Text style={styles.pricingAmount}>
-                      ₹{rateAmount || "0"}
-                      <Text style={styles.pricingPer}>  {rateTypeLabel}</Text>
+                      ₹{formattedRate}
+                      <Text style={styles.pricingPer}>  {displayRateType}</Text>
                     </Text>
                   </View>
                   {openToNegotiation && (
                     <Text style={styles.negotiableBadge}>Negotiable</Text>
                   )}
                 </View>
+                <TouchableOpacity style={[styles.editIconBtn, { top: 10, right: 10, marginTop: 0 }]} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* About Me */}
               <View style={styles.reviewCard}>
-                <View style={styles.reviewCardHeader}>
+                <View style={[styles.reviewCardHeader, { marginBottom: 20 }]}>
                   <Text style={styles.reviewCardTitle}>About Me</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
-                <Text style={styles.reviewBody}>{experienceText || "—"}</Text>
+                <Text style={styles.reviewBody}>{aboutMeText}</Text>
+                <TouchableOpacity style={[styles.editIconBtn, { top: 10, right: 10, marginTop: 0 }]} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* Certification */}
               <View style={styles.reviewCard}>
-                <View style={styles.reviewCardHeader}>
+                <View style={[styles.reviewCardHeader, { marginBottom: 24 }]}>
                   <Text style={styles.reviewCardTitle}>Certification (Optional)</Text>
-                  <TouchableOpacity style={styles.editIconBtn} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
-                    <View style={{ width: 20, height: 20 }}>
-                      <SvgUri uri={editUri} width="100%" height="100%" />
-                    </View>
-                  </TouchableOpacity>
                 </View>
-                <Text style={styles.reviewBody}>
-                  {certificates.length
-                    ? certificates.map((c) => c.name).join(", ")
-                    : "—"}
-                </Text>
+                {certificates.length > 0 ? (
+                  <View style={[styles.certGrid, { marginTop: 4 }]}>
+                    {certificates.map((file, idx) => {
+                      const isImage = (file.mimeType || "").startsWith("image/");
+                      return (
+                        <View key={`${file.uri}-${idx}`} style={styles.certThumb}>
+                          {isImage ? (
+                            <Image source={{ uri: file.uri }} style={styles.certThumbImage} />
+                          ) : (
+                            <View style={styles.certThumbFile}>
+                              <Ionicons name="document-text-outline" size={28} color="#4B5563" />
+                              <Text style={styles.certThumbName} numberOfLines={2}>
+                                {file.name}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <Text style={styles.reviewBody}>{certText}</Text>
+                )}
+                <TouchableOpacity style={[styles.editIconBtn, { top: 10, right: 10, marginTop: 0 }]} onPress={() => setCurrentStep(4)} activeOpacity={0.7}>
+                  <View style={{ width: 19, height: 19 }}>
+                    <SvgUri uri={editUri} width="100%" height="100%" />
+                  </View>
+                </TouchableOpacity>
               </View>
 
               {/* Ready to Go Live banner */}
@@ -859,7 +886,7 @@ const CreateProfessionalProfileScreen = () => {
                 <Ionicons
                   name="checkmark-circle-outline"
                   size={22}
-                  color="#1C64F2"
+                  color="#0088FF"
                   style={{ marginTop: 1, marginRight: 10 }}
                 />
                 <View style={{ flex: 1 }}>
@@ -885,20 +912,23 @@ const CreateProfessionalProfileScreen = () => {
               currentStep === 2
                 ? false
                 : currentStep === 3
-                ? !selectedExperience
-                : currentStep === 4
-                ? !selectedRateType || !rateAmount.trim() || !experienceText.trim()
-                : false;
+                  ? !selectedExperience
+                  : currentStep === 4
+                    ? !selectedRateType || !rateAmount.trim() || !experienceText.trim()
+                    : false;
             const ctaLabel =
               currentStep === 5 ? "Create Professional Profile" : "Continue";
             return (
               <View style={styles.bottomRow}>
                 <TouchableOpacity
-                  style={styles.backSquareBtn}
+                  style={[
+                    styles.backSquareBtn,
+                    currentStep === 5 && { borderColor: "#DDDDDD" }
+                  ]}
                   onPress={handleBack}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="arrow-back" size={22} color="#15A765" />
+                  <Ionicons name="arrow-back" size={22} color={currentStep === 5 ? "#111827" : "#15A765"} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
@@ -1027,10 +1057,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   completedStepCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#1AC961",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#00BA00",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1053,23 +1083,29 @@ const styles = StyleSheet.create({
   },
   activeStepText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
     fontFamily: "Montserrat_700Bold",
+    fontWeight: "700",
+    fontSize: 16,
+    lineHeight: 16,
+    letterSpacing: 0,
+    textAlign: "center",
   },
   inactiveStepCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#EEEFF1",
     justifyContent: "center",
     alignItems: "center",
   },
   inactiveStepText: {
     color: "#B0B5BC",
-    fontSize: 16,
-    fontWeight: "700",
     fontFamily: "Montserrat_700Bold",
+    fontWeight: "700",
+    fontSize: 16,
+    lineHeight: 16,
+    letterSpacing: 0,
+    textAlign: "center",
   },
   stepperLine: {
     flex: 1,
@@ -1079,7 +1115,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   stepperLineCompleted: {
-    backgroundColor: "#1AC961",
+    backgroundColor: "#00BA00",
   },
   headingSection: {
     paddingHorizontal: 20,
@@ -1107,7 +1143,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     paddingHorizontal: 20,
     justifyContent: "space-between",
-    gap:16,
+    gap: 16,
   },
   roleCard: {
     width: 164,
@@ -1550,12 +1586,13 @@ const styles = StyleSheet.create({
   verifiedBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginHorizontal: 20,
+    alignSelf: "center",
+    width: 345,
+    height: 93,
     marginTop: 4,
     marginBottom: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
     backgroundColor: "#F0F8FF",
     borderWidth: 0.5,
     borderColor: "#D6ECFF",
@@ -1567,7 +1604,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: -0.15,
     color: "#0088FF",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   verifiedBody: {
     fontFamily: "Poppins_400Regular",
@@ -1586,7 +1623,6 @@ const styles = StyleSheet.create({
   reviewTitle: {
     fontFamily: "Montserrat_500Medium",
     fontSize: 16,
-    fontWeight: "500",
     lineHeight: 16,
     letterSpacing: 0,
     color: "#1A181B",
@@ -1595,97 +1631,103 @@ const styles = StyleSheet.create({
   reviewSubtitle: {
     fontFamily: "Montserrat_500Medium",
     fontSize: 14,
-    fontWeight: "500",
     lineHeight: 14,
     letterSpacing: 0,
     color: "#8D848F",
   },
   reviewCard: {
     marginHorizontal: 20,
-    marginBottom: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
+    marginBottom: 8,
+    marginTop: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#DDDDDD",
     backgroundColor: "#FFFFFF",
+    position: "relative",
   },
   reviewCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+    paddingRight: 40,
   },
   reviewCardTitle: {
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 16,
-    fontWeight: "600",
     lineHeight: 16,
     letterSpacing: 0,
-    color: "#333333",
+    color: "#1A181B",
     flex: 1,
   },
   editIconBtn: {
     position: "absolute",
-    top: 10,
+    top: "50%",
+    marginTop: -10,
     right: 16,
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
     borderRadius: 12,
     backgroundColor: "#F2F3F4",
     alignItems: "center",
     justifyContent: "center",
   },
   reviewRow: {
-    fontSize: 14,
-    marginBottom: 6,
+    fontSize: 12,
+    fontfamily: "Montserrat_500Medium",
+    marginBottom: 3,
     lineHeight: 20,
+    paddingRight: 40,
   },
   reviewKey: {
-    color: "#0A0A0A",
+    color: "#666666",
     fontWeight: "500",
   },
   reviewValueGreen: {
     fontFamily: "Poppins_600SemiBold",
-    color: "#00BA00",
-    fontWeight: "600",
+    color: "#15A765",
     fontSize: 12,
-    lineHeight: 12,
+    lineHeight: 20,
     letterSpacing: 0,
   },
   reviewBody: {
-    fontSize: 14,
-    color: "#6B7280",
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#666666",
     lineHeight: 20,
+    paddingRight: 40,
   },
   pricingInner: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#E8FBEF",
-    borderRadius: 14,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
+    borderColor: "#DDDDDD",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     marginTop: 4,
   },
   pricingLabel: {
-    fontSize: 14,
-    color: "#4B5563",
-    marginBottom: 6,
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#666666",
+    marginBottom: 5,
   },
   pricingAmount: {
     fontSize: 24,
-    fontWeight: "800",
-    color: "#0A0A0A",
+    fontFamily: "Poppins_700Bold",
+    color: "#15A765",
   },
   pricingPer: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#4B5563",
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#666666",
   },
   negotiableBadge: {
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 14,
+    fontFamily: "Poppins_600SemiBold",
     color: "#15A765",
     marginLeft: 12,
   },

@@ -1,0 +1,1 @@
+"$logPath = 'C:\\Users\\aocha\\Downloads\\Asmita\\Chalo_Khelane_App\\client\\src\\screens\\player\\CreateProfessionalProfileScreen.js'\nif (Test-Path $logPath) {\n    Write-Output \"File exists\"\n} else {\n    Write-Output \"File does not exist\"\n}\n"

@@ -1,0 +1,940 @@
+=== STEP 54: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Fix the layout spacing of job tabs in the My Profile dashboard by adding horizontal padding and a gap to the row container, and adjusting the individual tab padding to prevent the active tab underline indicator from touching adjacent tabs.\"",
+  "EndLine": "2535",
+  "Instruction": "\"Set paddingHorizontal to 16 and gap to 12 in jobTabsRow, and change paddingHorizontal to 4 in jobTab.\"",
+  "ReplacementContent": "\"  jobTabsRow: {\\n    flexDirection: \\\"row\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    paddingHorizontal: 16,\\n    paddingTop: 8,\\n    gap: 12,\\n  },\\n  jobTab: {\\n    paddingBottom: 0,\\n    paddingHorizontal: 4,\\n  },\\n  jobTabText: {\\n    fontSize: 16,\\n    fontFamily: \\\"Montserrat_500Medium\\\",\\n    color: \\\"#666666\\\",\\n    paddingVertical: 16,\\n  },\\n  jobTabTextActive: {\\n    color: \\\"#15A765\\\",\\n  },\\n  jobTabUnderline: {\\n    height: 3,\\n    backgroundColor: \\\"#15A765\\\",\\n    borderRadius: 2,\\n  },\"",
+  "StartLine": "2511",
+  "TargetContent": "\"  jobTabsRow: {\\n    flexDirection: \\\"row\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    paddingHorizontal: 0,\\n    paddingTop: 8,\\n    gap: 0,\\n  },\\n  jobTab: {\\n    paddingBottom: 0,\\n    paddingHorizontal: 16,\\n  },\\n  jobTabText: {\\n    fontSize: 16,\\n    fontFamily: \\\"Montserrat_500Medium\\\",\\n    color: \\\"#666666\\\",\\n    paddingVertical: 16,\\n  },\\n  jobTabTextActive: {\\n    color: \\\"#15A765\\\",\\n  },\\n  jobTabUnderline: {\\n    height: 3,\\n    backgroundColor: \\\"#15A765\\\",\\n    borderRadius: 2,\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Updating jobTab styles\"",
+  "toolSummary": "\"Update jobTab styles in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 83: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add state variables and accept/decline action handlers to BrowseJobs.js.\"",
+  "EndLine": "384",
+  "Instruction": "\"Insert requestsList, showAcceptDeclineModal, selectedReqForModal, requestAction, handleAcceptRequest, and handleDeclineRequest after profilesActiveMap.\"",
+  "ReplacementContent": "\"  const [profilesActiveMap, setProfilesActiveMap] = useState(\\n    PROFESSIONAL_PROFILES.reduce((acc, p) => ({ ...acc, [p.id]: p.active }), {})\\n  );\\n  const [requestsList, setRequestsList] = useState(REQUESTS);\\n  const [showAcceptDeclineModal, setShowAcceptDeclineModal] = useState(false);\\n  const [selectedReqForModal, setSelectedReqForModal] = useState(null);\\n  const [requestAction, setRequestAction] = useState(\\\"accept\\\");\\n\\n  const handleAcceptRequest = (req) => {\\n    setSelectedReqForModal(req);\\n    setRequestAction(\\\"accept\\\");\\n    setShowAcceptDeclineModal(true);\\n    setRequestsList((prev) => prev.filter((r) => r.id !== req.id));\\n  };\\n\\n  const handleDeclineRequest = (req) => {\\n    setSelectedReqForModal(req);\\n    setRequestAction(\\\"decline\\\");\\n    setShowAcceptDeclineModal(true);\\n    setRequestsList((prev) => prev.filter((r) => r.id !== req.id));\\n  };\"",
+  "StartLine": "381",
+  "TargetContent": "\"  const [profilesActiveMap, setProfilesActiveMap] = useState(\\n    PROFESSIONAL_PROFILES.reduce((acc, p) => ({ ...acc, [p.id]: p.active }), {})\\n  );\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Adding request modal state and handlers\"",
+  "toolSummary": "\"Add request state in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 87: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update the accept and reject buttons in the request cards to trigger handleAcceptRequest and handleDeclineRequest.\"",
+  "EndLine": "591",
+  "Instruction": "\"Add onPress handler to rejectBtn calling handleDeclineRequest(req), and onPress handler to acceptBtn calling handleAcceptRequest(req).\"",
+  "ReplacementContent": "\"      <View style={styles.reqActions}>\\n        <TouchableOpacity style={styles.rejectBtn} activeOpacity={0.8} onPress={() => handleDeclineRequest(req)}>\\n          <Ionicons name=\\\"close\\\" size={22} color=\\\"#D7263D\\\" />\\n        </TouchableOpacity>\\n        <TouchableOpacity style={styles.acceptBtn} activeOpacity={0.9} onPress={() => handleAcceptRequest(req)}>\\n          <Ionicons name=\\\"checkmark\\\" size={18} color=\\\"#FFFFFF\\\" />\\n          <Text style={styles.acceptBtnText}>Accept</Text>\\n        </TouchableOpacity>\\n      </View>\"",
+  "StartLine": "583",
+  "TargetContent": "\"      <View style={styles.reqActions}>\\n        <TouchableOpacity style={styles.rejectBtn} activeOpacity={0.8}>\\n          <Ionicons name=\\\"close\\\" size={22} color=\\\"#D7263D\\\" />\\n        </TouchableOpacity>\\n        <TouchableOpacity style={styles.acceptBtn} activeOpacity={0.9}>\\n          <Ionicons name=\\\"checkmark\\\" size={18} color=\\\"#FFFFFF\\\" />\\n          <Text style={styles.acceptBtnText}>Accept</Text>\\n        </TouchableOpacity>\\n      </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Updating request card buttons\"",
+  "toolSummary": "\"Update request card buttons in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 91: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Replace static REQUESTS.map rendering with stateful requestsList.map and handle empty state.\"",
+  "EndLine": "838",
+  "Instruction": "\"Change REQUESTS.map to requestsList.map and implement an empty state view when requestsList is empty.\"",
+  "ReplacementContent": "\"                {/* Request cards */}\\n                <View style={{ marginTop: 14, gap: 14 }}>\\n                  {requestsList.length === 0 ? (\\n                    <View style={{ alignItems: \\\"center\\\", justifyContent: \\\"center\\\", paddingVertical: 40 }}>\\n                      <Ionicons name=\\\"mail-open-outline\\\" size={48} color=\\\"#CCCCCC\\\" />\\n                      <Text style={{ fontSize: 16, fontFamily: \\\"Montserrat_500Medium\\\", color: \\\"#999999\\\", marginTop: 12 }}>\\n                        All requests caught up!\\n                      </Text>\\n                    </View>\\n                  ) : (\\n                    requestsList.map(renderRequestCard)\\n                  )}\\n                </View>\"",
+  "StartLine": "834",
+  "TargetContent": "\"                {/* Request cards */}\\n                <View style={{ marginTop: 14, gap: 14 }}>\\n                  {REQUESTS.map(renderRequestCard)}\\n                </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Updating requests list rendering with empty state\"",
+  "toolSummary": "\"Update requests rendering in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 97: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Insert the Match Request Accept/Decline Modal into the render tree.\"",
+  "EndLine": "1419",
+  "Instruction": "\"Insert the Match Request Accept/Decline Modal before the Activate/Deactivate Profile Modal comment.\"",
+  "ReplacementContent": "\"      {/* Match Request Accept/Decline Action Modal */}\\n      <Modal\\n        visible={showAcceptDeclineModal}\\n        transparent\\n        animationType=\\\"fade\\\"\\n        statusBarTranslucent\\n        onRequestClose={() => setShowAcceptDeclineModal(false)}\\n      >\\n        <Pressable\\n          style={styles.customModalBackdrop}\\n          onPress={() => setShowAcceptDeclineModal(false)}\\n        >\\n          <View style={styles.customModalContainer}>\\n            {/* Close Button */}\\n            <TouchableOpacity\\n              style={styles.customModalCloseBtn}\\n              activeOpacity={0.7}\\n              onPress={() => setShowAcceptDeclineModal(false)}\\n            >\\n              <Ionicons name=\\\"close\\\" size={20} color=\\\"#1F1F1F\\\" />\\n            </TouchableOpacity>\\n\\n            <Pressable style={styles.customModalContent} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"center\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={styles.customModalGreenCircle}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={styles.customModalTitle}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"center\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"center\\\", alignSelf: \\\"center\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\" }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n                    \\n                    <View style={{ alignSelf: \\\"flex-start\\\", marginTop: 8, gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text\n<truncated 3969 bytes>",
+  "StartLine": "1418",
+  "TargetContent": "\"      {/* Activate/Deactivate Profile Modal */}\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Inserting Match Request Modal\"",
+  "toolSummary": "\"Insert Match Request Modal in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 103: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add outlinedActionBtn and outlinedActionBtnText styles to the stylesheet.\"",
+  "EndLine": "3167",
+  "Instruction": "\"Insert outlinedActionBtn and outlinedActionBtnText styles right after customModalConfirmBtnText.\"",
+  "ReplacementContent": "\"  customModalConfirmBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#FFFFFF\\\",\\n  },\\n  outlinedActionBtn: {\\n    width: \\\"100%\\\",\\n    height: 48,\\n    borderRadius: 24,\\n    borderWidth: 1,\\n    borderColor: \\\"#AEB5BC\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    backgroundColor: \\\"transparent\\\",\\n    marginTop: 8,\\n  },\\n  outlinedActionBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#666666\\\",\\n  },\"",
+  "StartLine": "3162",
+  "TargetContent": "\"  customModalConfirmBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#FFFFFF\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Adding outlined button styles\"",
+  "toolSummary": "\"Add outlined button styles in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 112: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Left-align all content and text elements within the Match Request Action Modal to match design guidelines.\"",
+  "EndLine": "1537",
+  "Instruction": "\"Add customModalContent alignment styles, set View/Text alignment to flex-start/left, and remove center alignment properties.\"",
+  "ReplacementContent": "\"            <Pressable style={[styles.customModalContent, { alignItems: \\\"flex-start\\\" }]} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"flex-start\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={[styles.customModalGreenCircle, { alignSelf: \\\"flex-start\\\", marginTop: 0 }]}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={[styles.customModalTitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", paddingHorizontal: 0, marginBottom: 8 }]}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"flex-start\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\", color: \\\"#666666\\\", marginBottom: 12 }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Event updates\\n                      </Text>\\n                    </View>\\n                  </View>\\n\\n     \n<truncated 3401 bytes>",
+  "StartLine": "1441",
+  "TargetContent": "\"            <Pressable style={styles.customModalContent} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"center\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={styles.customModalGreenCircle}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={styles.customModalTitle}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"center\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"center\\\", alignSelf: \\\"center\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\" }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", marginTop: 8, gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Event updates\\n                      </Text>\\n                    </View>\\n                  </View>\\n\\n                  {/* Outlined Action Button */}\\n                  <TouchableOpacity\\n                    style={styles.outlinedActionBtn}\\n                    activeOpacity={0.8}\\n                    onPress={()\n<truncated 3025 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Left-aligning modal contents\"",
+  "toolSummary": "\"Left-align modal elements in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 118: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Center align the circular status icon in the popup while leaving text left-aligned.\"",
+  "EndLine": "1510",
+  "Instruction": "\"Change the alignSelf property of the green check circle and red cross circle views from flex-start to center.\"",
+  "ReplacementContent": "\"            <Pressable style={[styles.customModalContent, { alignItems: \\\"flex-start\\\" }]} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"flex-start\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={[styles.customModalGreenCircle, { alignSelf: \\\"center\\\", marginTop: 0 }]}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={[styles.customModalTitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", paddingHorizontal: 0, marginBottom: 8 }]}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"flex-start\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\", color: \\\"#666666\\\", marginBottom: 12 }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Event updates\\n                      </Text>\\n                    </View>\\n                  </View>\\n\\n         \n<truncated 2013 bytes>",
+  "StartLine": "1441",
+  "TargetContent": "\"            <Pressable style={[styles.customModalContent, { alignItems: \\\"flex-start\\\" }]} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"flex-start\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={[styles.customModalGreenCircle, { alignSelf: \\\"flex-start\\\", marginTop: 0 }]}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={[styles.customModalTitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", paddingHorizontal: 0, marginBottom: 8 }]}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"flex-start\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\", color: \\\"#666666\\\", marginBottom: 12 }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Event updates\\n                      </Text>\\n                    </View>\\n                  </View>\\n\\n     \n<truncated 2021 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Centering circle icons\"",
+  "toolSummary": "\"Center align circle icons in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 128: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Set outlined button styling to exact Figma specifications.\"",
+  "EndLine": "3182",
+  "Instruction": "\"Modify outlinedActionBtn to use paddingVertical: 16 instead of height: 48. Modify outlinedActionBtnText to use Montserrat_500Medium, fontSize: 16, and lineHeight: 16.\"",
+  "ReplacementContent": "\"  outlinedActionBtn: {\\n    width: \\\"100%\\\",\\n    borderRadius: 24,\\n    borderWidth: 1,\\n    borderColor: \\\"#AEB5BC\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    backgroundColor: \\\"transparent\\\",\\n    paddingVertical: 16,\\n    marginTop: 8,\\n  },\\n  outlinedActionBtnText: {\\n    fontSize: 16,\\n    fontFamily: \\\"Montserrat_500Medium\\\",\\n    color: \\\"#666666\\\",\\n    lineHeight: 16,\\n  },\"",
+  "StartLine": "3167",
+  "TargetContent": "\"  outlinedActionBtn: {\\n    width: \\\"100%\\\",\\n    height: 48,\\n    borderRadius: 24,\\n    borderWidth: 1,\\n    borderColor: \\\"#AEB5BC\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    backgroundColor: \\\"transparent\\\",\\n    marginTop: 8,\\n  },\\n  outlinedActionBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#666666\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Applying Figma button styles\"",
+  "toolSummary": "\"Apply Figma button styles in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 132: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update modal typography and spacing inline to match detailed Figma specifications.\"",
+  "EndLine": "1537",
+  "Instruction": "\"Apply the specific fonts, sizes, colors, margins, line-heights, and vertical padding to the modal text and layout elements.\"",
+  "ReplacementContent": "\"            <Pressable style={[styles.customModalContent, { alignItems: \\\"flex-start\\\" }]} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"flex-start\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={[styles.customModalGreenCircle, { alignSelf: \\\"center\\\", marginTop: 0 }]}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={[styles.customModalTitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", paddingHorizontal: 0, fontFamily: \\\"Montserrat_600SemiBold\\\", fontWeight: \\\"600\\\", fontSize: 20, lineHeight: 24, color: \\\"#333333\\\", marginBottom: 8 }]}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 30, alignItems: \\\"flex-start\\\" }]}>\\n                    <Text style={{ textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", fontFamily: \\\"Poppins_400Regular\\\", fontWeight: \\\"400\\\", fontSize: 16, lineHeight: 22, color: \\\"#666666\\\", marginBottom: 4 }}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", gap: 4 }}>\\n                      <Text style={{ fontFamily: \\\"Poppins_400Regular\\\", fontWeight: \\\"400\\\", fontSize: 14, lineHeight: 19, color: \\\"#666666\\\" }}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={{ fontFamily: \\\"Poppins_400Regular\\\", fontWeight: \\\"400\\\", fontSize: 14, lineHeight: 19, color: \\\"#666666\\\" }}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={{ fontFamily: \\\"Poppins_400Regular\\\", fontWeight: \\\"400\\\", fontSize: 14, lineHeight: 19, color: \\\"#666666\\\" }}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text\n<truncated 3917 bytes>",
+  "StartLine": "1441",
+  "TargetContent": "\"            <Pressable style={[styles.customModalContent, { alignItems: \\\"flex-start\\\" }]} pointerEvents=\\\"box-none\\\">\\n              {requestAction === \\\"accept\\\" ? (\\n                <View style={{ alignItems: \\\"flex-start\\\", width: \\\"100%\\\" }}>\\n                  {/* Green check circle */}\\n                  <View style={[styles.customModalGreenCircle, { alignSelf: \\\"center\\\", marginTop: 0 }]}>\\n                    <Ionicons name=\\\"checkmark\\\" size={32} color=\\\"#FFFFFF\\\" />\\n                  </View>\\n\\n                  <Text style={[styles.customModalTitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", paddingHorizontal: 0, marginBottom: 8 }]}>\\n                    Match Request Accepted\\n                  </Text>\\n\\n                  <View style={[styles.customModalTextContainer, { marginBottom: 24, alignItems: \\\"flex-start\\\" }]}>\\n                    <Text style={[styles.customModalSubtitle, { textAlign: \\\"left\\\", alignSelf: \\\"flex-start\\\", fontSize: 15, fontFamily: \\\"Poppins_400Regular\\\", color: \\\"#666666\\\", marginBottom: 12 }]}>\\n                      Event has been added to your schedule.\\n                    </Text>\\n\\n                    <View style={{ alignSelf: \\\"flex-start\\\", gap: 4 }}>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, fontFamily: \\\"Poppins_500Medium\\\", color: \\\"#666666\\\" }]}>\\n                        You will receive:\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Match reminders\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Live scoreboard access\\n                      </Text>\\n                      <Text style={[styles.customModalBullet, { fontSize: 14, color: \\\"#666666\\\" }]}>\\n                        \u2022 Event updates\\n                      </Text>\\n                    </View>\\n                  </View>\\n\\n         \n<truncated 3393 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Applying Figma styles to modal elements\"",
+  "toolSummary": "\"Apply Figma modal styles in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 151: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Remove the View Profile link from the professional profile subtitle.\"",
+  "EndLine": "1157",
+  "Instruction": "\"Remove the \u2022 View Profile nested Text component from the profCardSubtitle block.\"",
+  "ReplacementContent": "\"                            <View style={styles.profCardHeader}>\\n                              <View style={{ flex: 1, paddingRight: 10 }}>\\n                                <Text style={styles.profCardTitle}>{p.role}</Text>\\n                                <Text style={styles.profCardSubtitle}>\\n                                  {p.sport} \u2022 {p.tier}\\n                                </Text>\\n                              </View>\"",
+  "StartLine": "1151",
+  "TargetContent": "\"                            <View style={styles.profCardHeader}>\\n                              <View style={{ flex: 1, paddingRight: 10 }}>\\n                                <Text style={styles.profCardTitle}>{p.role}</Text>\\n                                <Text style={styles.profCardSubtitle}>\\n                                  {p.sport} \u2022 {p.tier} <Text style={{ color: \\\"#15A765\\\", fontFamily: \\\"Poppins_600SemiBold\\\" }}>\u2022 View Profile</Text>\\n                                </Text>\\n                              </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Removing View Profile text\"",
+  "toolSummary": "\"Remove View Profile text in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 157: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Style the professional profile card title to follow Figma specifications exactly.\"",
+  "EndLine": "2906",
+  "Instruction": "\"Modify profCardTitle to use Montserrat_600SemiBold, fontSize: 18, lineHeight: 27, letterSpacing: -0.44, and color: #0A0A0A.\"",
+  "ReplacementContent": "\"  profCardTitle: {\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    fontSize: 18,\\n    lineHeight: 27,\\n    letterSpacing: -0.44,\\n    color: \\\"#0A0A0A\\\",\\n  },\"",
+  "StartLine": "2901",
+  "TargetContent": "\"  profCardTitle: {\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    fontSize: 18,\\n    lineHeight: 24,\\n    color: \\\"#0A0A0A11\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Applying professional card title style\"",
+  "toolSummary": "\"Apply profCardTitle style in BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 174: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Change sports selection active chip colors in CreateProfessionalProfileScreen from green to orange to match the rest of the application's theme.\"",
+  "EndLine": "1553",
+  "Instruction": "\"Change background color in chipButtonActive to #FFF4EA, border color to #FF8D28, and text color in chipTextActive to #FF8D28.\"",
+  "ReplacementContent": "\"  chipButtonActive: {\\n    backgroundColor: \\\"#FFF4EA\\\",\\n    borderWidth: 1,\\n    borderColor: \\\"#FF8D28\\\",\\n  },\\n  chipText: {\\n    color: \\\"#8D848F\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    fontSize: 12,\\n  },\\n  chipTextActive: {\\n    color: \\\"#FF8D28\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n  },\"",
+  "StartLine": "1540",
+  "TargetContent": "\"  chipButtonActive: {\\n    backgroundColor: \\\"#EAFDF4\\\",\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n  },\\n  chipText: {\\n    color: \\\"#8D848F\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    fontSize: 12,\\n  },\\n  chipTextActive: {\\n    color: \\\"#15A765\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Modifying chip color theme\"",
+  "toolSummary": "\"Modify sports selection active chip colors to orange\""
+}
+
+==================================================
+
+=== STEP 204: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Import useRef and useEffect from React to support scroll positioning when currentStep changes.\"",
+  "EndLine": "1",
+  "Instruction": "\"Add useRef and useEffect imports to the React import statement.\"",
+  "ReplacementContent": "\"import React, { useState, useRef, useEffect } from \\\"react\\\";\"",
+  "StartLine": "1",
+  "TargetContent": "\"import React, { useState } from \\\"react\\\";\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating React imports\"",
+  "toolSummary": "\"Import useRef and useEffect in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 208: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add scrollViewRef, scroll effect on step change, and initialize openToNegotiation correctly from editProfile.\"",
+  "EndLine": "234",
+  "Instruction": "\"Insert scrollViewRef and useEffect under useSafeAreaInsets, and change openToNegotiation default state to read from editProfile if available.\"",
+  "ReplacementContent": "\"  // Extract edit profile parameters if available\\n  const editProfile = route.params?.profile || null;\\n\\n  const scrollViewRef = useRef(null);\\n\\n  useEffect(() => {\\n    if (scrollViewRef.current) {\\n      scrollViewRef.current.scrollTo({ y: 0, animated: false });\\n    }\\n  }, [currentStep]);\\n\\n  // State management\"",
+  "StartLine": "231",
+  "TargetContent": "\"  // Extract edit profile parameters if available\\n  const editProfile = route.params?.profile || null;\\n\\n  // State management\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding scrollViewRef and step listener\"",
+  "toolSummary": "\"Add scrollViewRef and step listener in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 212: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Initialize openToNegotiation from editProfile if passed, otherwise default to true.\"",
+  "EndLine": "281",
+  "Instruction": "\"Change openToNegotiation useState parameter to read from editProfile if available.\"",
+  "ReplacementContent": "\"  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? true) : true\\n  );\"",
+  "StartLine": "280",
+  "TargetContent": "\"  const [openToNegotiation, setOpenToNegotiation] = useState(true);\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Initializing openToNegotiation state\"",
+  "toolSummary": "\"Initialize openToNegotiation state in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 218: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Attach scrollViewRef to ScrollView.\"",
+  "EndLine": "399",
+  "Instruction": "\"Add ref={scrollViewRef} property to the ScrollView tag.\"",
+  "ReplacementContent": "\"      <ScrollView\\n        ref={scrollViewRef}\\n        style={styles.scrollView}\\n        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}\\n        showsVerticalScrollIndicator={false}\\n      >\"",
+  "StartLine": "395",
+  "TargetContent": "\"      <ScrollView\\n        style={styles.scrollView}\\n        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}\\n        showsVerticalScrollIndicator={false}\\n      >\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Attaching ScrollView ref\"",
+  "toolSummary": "\"Attach ScrollView ref in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 224: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add a small timeout to deferred scroll transition to ensure React Native finishes layout rendering before scrolling.\"",
+  "EndLine": "241",
+  "Instruction": "\"Replace useEffect with a version that uses a setTimeout to delay the scrollTo function call by 50ms.\"",
+  "ReplacementContent": "\"  useEffect(() => {\\n    const timer = setTimeout(() => {\\n      if (scrollViewRef.current) {\\n        scrollViewRef.current.scrollTo({ y: 0, animated: false });\\n      }\\n    }, 50);\\n    return () => clearTimeout(timer);\\n  }, [currentStep]);\"",
+  "StartLine": "236",
+  "TargetContent": "\"  useEffect(() => {\\n    if (scrollViewRef.current) {\\n      scrollViewRef.current.scrollTo({ y: 0, animated: false });\\n    }\\n  }, [currentStep]);\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding deferred scroll effect\"",
+  "toolSummary": "\"Add deferred scroll effect in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 230: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Change default state of openToNegotiation from true to false so it is unchecked by default.\"",
+  "EndLine": "285",
+  "Instruction": "\"Change the useState initialization values to false.\"",
+  "ReplacementContent": "\"  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\"",
+  "StartLine": "283",
+  "TargetContent": "\"  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? true) : true\\n  );\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Changing openToNegotiation default to false\"",
+  "toolSummary": "\"Change openToNegotiation default state to false\""
+}
+
+==================================================
+
+=== STEP 244: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add certificateUri state and remove helper, and save uri in handleUploadCertificate.\"",
+  "EndLine": "310",
+  "Instruction": "\"Add certificateUri and handleRemoveCertificate, and update handleUploadCertificate to call setCertificateUri(uri).\"",
+  "ReplacementContent": "\"  const [certificateName, setCertificateName] = useState(\\n    editProfile?.certificateName || \\\"\\\"\\n  );\\n  const [certificateUri, setCertificateUri] = useState(\\n    editProfile?.certificateUri || \\\"\\\"\\n  );\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n \\n  const handleUploadCertificate = async () => {\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n \\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n \\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop();\\n        setCertificateName(filename || \\\"certificate.jpg\\\");\\n        setCertificateUri(uri);\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\\n\\n  const handleRemoveCertificate = () => {\\n    setCertificateName(\\\"\\\");\\n    setCertificateUri(\\\"\\\");\\n  };\"",
+  "StartLine": "280",
+  "TargetContent": "\"  const [certificateName, setCertificateName] = useState(\\n    editProfile?.certificateName || \\\"\\\"\\n  );\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n \\n  const handleUploadCertificate = async () => {\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n \\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n \\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop();\\n        setCertificateName(filename || \\\"certificate.jpg\\\");\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating certificate handlers and state\"",
+  "toolSummary": "\"Update certificate state and handlers in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 246: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update the state variables and handleUploadCertificate block in CreateProfessionalProfileScreen.js.\"",
+  "EndLine": "310",
+  "Instruction": "\"Add certificateUri state and update handleUploadCertificate to save the uri to state. Add handleRemoveCertificate.\"",
+  "ReplacementContent": "\"  const [certificateName, setCertificateName] = useState(\\n    editProfile?.certificateName || \\\"\\\"\\n  );\\n  const [certificateUri, setCertificateUri] = useState(\\n    editProfile?.certificateUri || \\\"\\\"\\n  );\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n\\n  const handleUploadCertificate = async () => {\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n\\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n\\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop();\\n        setCertificateName(filename || \\\"certificate.jpg\\\");\\n        setCertificateUri(uri);\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\\n\\n  const handleRemoveCertificate = () => {\\n    setCertificateName(\\\"\\\");\\n    setCertificateUri(\\\"\\\");\\n  };\"",
+  "StartLine": "280",
+  "TargetContent": "\"  const [certificateName, setCertificateName] = useState(\\n    editProfile?.certificateName || \\\"\\\"\\n  );\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n\\n  const handleUploadCertificate = async () => {\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n\\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n\\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop();\\n        setCertificateName(filename || \\\"certificate.jpg\\\");\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Replacing certificate state and upload handlers\"",
+  "toolSummary": "\"Replace certificate state and upload handlers\""
+}
+
+==================================================
+
+=== STEP 250: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Implement square format certificate image preview with a cross button on top-right in Step 4.\"",
+  "EndLine": "847",
+  "Instruction": "\"Add conditional rendering to show the uploaded image in a square container with a remove button if certificateUri is present.\"",
+  "ReplacementContent": "\"            {/* Certification (Optional) */}\\n            <View style={styles.sectionContainer}>\\n              <Text style={styles.sectionTitle}>Certification (Optional)</Text>\\n              {certificateUri ? (\\n                <View style={styles.certificatePreviewContainer}>\\n                  <Image source={{ uri: certificateUri }} style={styles.certificatePreviewImage} />\\n                  <TouchableOpacity\\n                    style={styles.removeCertificateBtn}\\n                    activeOpacity={0.7}\\n                    onPress={handleRemoveCertificate}\\n                  >\\n                    <Ionicons name=\\\"close\\\" size={16} color=\\\"#FFFFFF\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n              ) : (\\n                <TouchableOpacity\\n                  style={styles.uploadBox}\\n                  activeOpacity={0.85}\\n                  onPress={handleUploadCertificate}\\n                >\\n                  <CertificateIcon size={24} color=\\\"#8D848F\\\" />\\n                  <Text style={styles.uploadText}>\\n                    {certificateName || \\\"Upload certificates\\\"}\\n                  </Text>\\n                </TouchableOpacity>\\n              )}\\n              <Text style={styles.charCount}>{certificateName.length}/500 characters</Text>\\n            </View>\"",
+  "StartLine": "833",
+  "TargetContent": "\"            {/* Certification (Optional) */}\\n            <View style={styles.sectionContainer}>\\n              <Text style={styles.sectionTitle}>Certification (Optional)</Text>\\n              <TouchableOpacity\\n                style={styles.uploadBox}\\n                activeOpacity={0.85}\\n                onPress={handleUploadCertificate}\\n              >\\n                <CertificateIcon size={24} color=\\\"#8D848F\\\" />\\n                <Text style={styles.uploadText}>\\n                  {certificateName || \\\"Upload certificates\\\"}\\n                </Text>\\n              </TouchableOpacity>\\n              <Text style={styles.charCount}>{certificateName.length}/500 characters</Text>\\n            </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding certificate preview render in Step 4\"",
+  "toolSummary": "\"Add certificate preview render in Step 4 in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 254: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Implement square format certificate image preview in Step 5 (Preview Card).\"",
+  "EndLine": "1034",
+  "Instruction": "\"Replace the text display of the certificate name with the square preview view if certificateUri is present.\"",
+  "ReplacementContent": "\"              {/* Certification (Optional) Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Certification (Optional)</Text>\\n                  <TouchableOpacity\\n                    style={styles.editCircleBtn}\\n                    onPress={() => setCurrentStep(4)}\\n                    activeOpacity={0.7}\\n                  >\\n                    <EditIcon size={20} color=\\\"#666666\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n                {certificateUri ? (\\n                  <View style={[styles.certificatePreviewContainer, { marginTop: 8 }]}>\\n                    <Image source={{ uri: certificateUri }} style={styles.certificatePreviewImage} />\\n                  </View>\\n                ) : (\\n                  <Text style={styles.previewAboutMeText}>\\n                    No certificate uploaded.\\n                  </Text>\\n                )}\\n              </View>\"",
+  "StartLine": "1019",
+  "TargetContent": "\"              {/* Certification (Optional) Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Certification (Optional)</Text>\\n                  <TouchableOpacity\\n                    style={styles.editCircleBtn}\\n                    onPress={() => setCurrentStep(4)}\\n                    activeOpacity={0.7}\\n                  >\\n                    <EditIcon size={20} color=\\\"#666666\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n                <Text style={styles.previewAboutMeText}>\\n                  {certificateName || \\\"No certificate uploaded.\\\"}\\n                </Text>\\n              </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding certificate preview render in Step 5\"",
+  "toolSummary": "\"Add certificate preview render in Step 5 in CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 279: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add certificate preview container, image, and close button styles to support uploaded certificate thumbnail display in a square format with a top-right overlay button.\"",
+  "EndLine": "1837",
+  "Instruction": "\"Add certificate preview styles inside the stylesheet definition.\"",
+  "ReplacementContent": "\"  verifiedBody: {\\n    fontSize: 12,\\n    color: \\\"#0088FF\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    lineHeight: 18,\\n  },\\n  certificatePreviewContainer: {\\n    width: 120,\\n    height: 120,\\n    borderRadius: 16,\\n    position: \\\"relative\\\",\\n    overflow: \\\"visible\\\",\\n    backgroundColor: \\\"#F3F4F6\\\",\\n    marginTop: 8,\\n  },\\n  certificatePreviewImage: {\\n    width: \\\"100%\\\",\\n    height: \\\"100%\\\",\\n    borderRadius: 16,\\n    resizeMode: \\\"cover\\\",\\n  },\\n  removeCertificateBtn: {\\n    position: \\\"absolute\\\",\\n    top: -8,\\n    right: -8,\\n    width: 24,\\n    height: 24,\\n    borderRadius: 12,\\n    backgroundColor: \\\"#FF2B55\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    shadowColor: \\\"#000\\\",\\n    shadowOffset: { width: 0, height: 2 },\\n    shadowOpacity: 0.25,\\n    shadowRadius: 3.84,\\n    elevation: 5,\\n  },\"",
+  "StartLine": "1831",
+  "TargetContent": "\"  verifiedBody: {\\n    fontSize: 12,\\n    color: \\\"#0088FF\\\",\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    lineHeight: 18,\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding certificate preview styles to CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 285: multi_replace_file_content ===
+{
+  "Description": "\"Add certificateUri to all compiled profileData objects in CreateProfessionalProfileScreen.js modal handlers.\"",
+  "Instruction": "\"Append certificateUri to profileData structures in modal callbacks.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":1152,\"ReplacementContent\":\"          const profileData = {\\n            id: editProfile?.id || `p_${Date.now()}`,\\n            role: cleanRole,\\n            sport: cleanSports[0] || \\\"Cricket\\\",\\n            tier: cleanExperience,\\n            rating: editProfile?.rating || \\\"4.8\\\",\\n            jobsDone: editProfile?.jobsDone || \\\"0\\\",\\n            earned: editProfile?.earned || \\\"\u20b90\\\",\\n            active: editProfile?.active ?? true,\\n            city: city || \\\"Pune\\\",\\n            selectedRole,\\n            selectedSports: cleanSports,\\n            selectedExperience,\\n            selectedAvailability,\\n            availabilityText: cleanAvailabilityText,\\n            selectedRateType,\\n            rateAmount,\\n            experienceText,\\n            certificateName,\\n            certificateUri,\\n            openToNegotiation,\\n          };\",\"StartLine\":1131,\"TargetContent\":\"          const profileData = {\\n            id: editProfile?.id || `p_${Date.now()}`,\\n            role: cleanRole,\\n            sport: cleanSports[0] || \\\"Cricket\\\",\\n            tier: cleanExperience,\\n            rating: editProfile?.rating || \\\"4.8\\\",\\n            jobsDone: editProfile?.jobsDone || \\\"0\\\",\\n            earned: editProfile?.earned || \\\"\u20b90\\\",\\n            active: editProfile?.active ?? true,\\n            city: city || \\\"Pune\\\",\\n            selectedRole,\\n            selectedSports: cleanSports,\\n            selectedExperience,\\n            selectedAvailability,\\n            availabilityText: cleanAvailabilityText,\\n            selectedRateType,\\n            rateAmount,\\n            experienceText,\\n            certificateName,\\n            openToNegotiation,\\n          };\"},{\"AllowMultiple\":false,\"EndLine\":1191,\"ReplacementContent\":\"            const profileData = {\\n              id: editProfile?.id || `p_${Date.now()}`,\\n              role: cleanRole,\\n              sport: cleanSports[0] || \\\"Cricket\\\",\\n              tier: cleanExperience,\\n              rating: editProfile?.r\n<truncated 7837 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating profileData compilation in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 289: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough details the complete implementation for the certificate image upload square preview and the overlay close/remove button.\"}",
+  "CodeContent": "\"# Walkthrough: Uploaded Certificate Preview & Removal\\n\\nThis document summarizes the changes implemented to meet the user's request for displaying the uploaded certificate image in a premium square format and with an overlay \\\"X\\\" (close/cross) button on top.\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Style Definitions for Step 4 Preview Card\\nAdded missing layout, image aspect-ratio, and overlay styles in the `StyleSheet` of [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js):\\n- **`certificatePreviewContainer`**: A relative-positioned `120x120` square box with rounded borders (`borderRadius: 16`), proper overlay visibility, and a clean background color.\\n- **`certificatePreviewImage`**: Cover-resized to fill the entire square container seamlessly.\\n- **`removeCertificateBtn`**: An absolute-positioned round button (`top: -8, right: -8`) styled with a vibrant red background (`#FF2B55`) and an elegant drop shadow/elevation to overlay nicely on top of the image.\\n\\n```diff\\n+  certificatePreviewContainer: {\\n+    width: 120,\\n+    height: 120,\\n+    borderRadius: 16,\\n+    position: \\\"relative\\\",\\n+    overflow: \\\"visible\\\",\\n+    backgroundColor: \\\"#F3F4F6\\\",\\n+    marginTop: 8,\\n+  },\\n+  certificatePreviewImage: {\\n+    width: \\\"100%\\\",\\n+    height: \\\"100%\\\",\\n+    borderRadius: 16,\\n+    resizeMode: \\\"cover\\\",\\n+  },\\n+  removeCertificateBtn: {\\n+    position: \\\"absolute\\\",\\n+    top: -8,\\n+    right: -8,\\n+    width: 24,\\n+    height: 24,\\n+    borderRadius: 12,\\n+    backgroundColor: \\\"#FF2B55\\\",\\n+    justifyContent: \\\"center\\\",\\n+    alignItems: \\\"center\\\",\\n+    shadowColor: \\\"#000\\\",\\n+    shadowOffset: { width: 0, height: 2 },\\n+    shadowOpacity: 0.25,\\n+    shadowRadius: 3.84,\\n+    elevation: 5,\\n+  },\\n```\\n\\n---\\n\\n### 2. State & API Mapping\\nUpdated all places where the user profile is compiled or saved (`profileData`) in the creation modals of [CreateProfessionalProfileScreen.js](file:///c:\n<truncated 989 bytes>",
+  "Description": "\"Create walkthrough markdown documenting stylesheet and profileData changes to complete certificate upload UI enhancements.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Creating walkthrough.md artifact\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 295: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Change certificate hooks and handlers to support multiple certificates (limit 3).\"",
+  "EndLine": "320",
+  "Instruction": "\"Replace singular certificate hooks and handlers with multiple certificate state array and handlers.\"",
+  "ReplacementContent": "\"  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n\\n  const handleUploadCertificate = async () => {\\n    if (certificates.length >= 3) {\\n      alert(\\\"You can upload a maximum of 3 certificates.\\\");\\n      return;\\n    }\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n\\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n\\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop() || `certificate_${certificates.length + 1}.jpg`;\\n        setCertificates(prev => [...prev, { uri, name: filename }]);\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\\n\\n  const handleRemoveCertificate = (indexToRemove) => {\\n    setCertificates(prev => prev.filter((_, idx) => idx !== indexToRemove));\\n  };\"",
+  "StartLine": "280",
+  "TargetContent": "\"  const [certificateName, setCertificateName] = useState(\\n    editProfile?.certificateName || \\\"\\\"\\n  );\\n  const [certificateUri, setCertificateUri] = useState(\\n    editProfile?.certificateUri || \\\"\\\"\\n  );\\n  const [openToNegotiation, setOpenToNegotiation] = useState(\\n    editProfile ? (editProfile.openToNegotiation ?? false) : false\\n  );\\n\\n  const handleUploadCertificate = async () => {\\n    try {\\n      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();\\n      if (status !== \\\"granted\\\") {\\n        alert(\\\"Permission to access gallery is required to upload certificates!\\\");\\n        return;\\n      }\\n\\n      const result = await ImagePicker.launchImageLibraryAsync({\\n        mediaTypes: ImagePicker.MediaTypeOptions?.Images || \\\"images\\\",\\n        allowsEditing: true,\\n        quality: 1,\\n      });\\n\\n      if (!result.canceled && result.assets && result.assets.length > 0) {\\n        const uri = result.assets[0].uri;\\n        const filename = uri.split(\\\"/\\\").pop();\\n        setCertificateName(filename || \\\"certificate.jpg\\\");\\n        setCertificateUri(uri);\\n      }\\n    } catch (error) {\\n      console.log(\\\"Error picking image:\\\", error);\\n      alert(\\\"Failed to open image gallery\\\");\\n    }\\n  };\\n\\n  const handleRemoveCertificate = () => {\\n    setCertificateName(\\\"\\\");\\n    setCertificateUri(\\\"\\\");\\n  };\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating state variables and handlers in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 299: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update step 4 Certification render code to support displaying up to 3 side-by-side square previews with close overlays and a small add card.\"",
+  "EndLine": "863",
+  "Instruction": "\"Update Certification render code inside Step 4 view block.\"",
+  "ReplacementContent": "\"            {/* Certification (Optional) */}\\n            <View style={styles.sectionContainer}>\\n              <Text style={styles.sectionTitle}>Certification (Optional)</Text>\\n              {certificates.length === 0 ? (\\n                <TouchableOpacity\\n                  style={styles.uploadBox}\\n                  activeOpacity={0.85}\\n                  onPress={handleUploadCertificate}\\n                >\\n                  <CertificateIcon size={24} color=\\\"#8D848F\\\" />\\n                  <Text style={styles.uploadText}>Upload certificates</Text>\\n                </TouchableOpacity>\\n              ) : (\\n                <View style={{ flexDirection: \\\"row\\\", flexWrap: \\\"wrap\\\", gap: 12, alignItems: \\\"center\\\" }}>\\n                  {certificates.map((cert, index) => (\\n                    <View key={index} style={styles.certificatePreviewContainer}>\\n                      <Image source={{ uri: cert.uri }} style={styles.certificatePreviewImage} />\\n                      <TouchableOpacity\\n                        style={styles.removeCertificateBtn}\\n                        activeOpacity={0.7}\\n                        onPress={() => handleRemoveCertificate(index)}\\n                      >\\n                        <Ionicons name=\\\"close\\\" size={16} color=\\\"#FFFFFF\\\" />\\n                      </TouchableOpacity>\\n                    </View>\\n                  ))}\\n                  {certificates.length < 3 && (\\n                    <TouchableOpacity\\n                      style={styles.uploadBoxSmall}\\n                      activeOpacity={0.85}\\n                      onPress={handleUploadCertificate}\\n                    >\\n                      <Feather name=\\\"plus\\\" size={28} color=\\\"#8D848F\\\" />\\n                      <Text style={styles.uploadTextSmall}>Upload</Text>\\n                    </TouchableOpacity>\\n                  )}\\n                </View>\\n              )}\\n              <Text style={styles.charCount}>{certificates.length}/3 uploaded</Text>\\n            </View>\"",
+  "StartLine": "836",
+  "TargetContent": "\"            {/* Certification (Optional) */}\\n            <View style={styles.sectionContainer}>\\n              <Text style={styles.sectionTitle}>Certification (Optional)</Text>\\n              {certificateUri ? (\\n                <View style={styles.certificatePreviewContainer}>\\n                  <Image source={{ uri: certificateUri }} style={styles.certificatePreviewImage} />\\n                  <TouchableOpacity\\n                    style={styles.removeCertificateBtn}\\n                    activeOpacity={0.7}\\n                    onPress={handleRemoveCertificate}\\n                  >\\n                    <Ionicons name=\\\"close\\\" size={16} color=\\\"#FFFFFF\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n              ) : (\\n                <TouchableOpacity\\n                  style={styles.uploadBox}\\n                  activeOpacity={0.85}\\n                  onPress={handleUploadCertificate}\\n                >\\n                  <CertificateIcon size={24} color=\\\"#8D848F\\\" />\\n                  <Text style={styles.uploadText}>\\n                    {certificateName || \\\"Upload certificates\\\"}\\n                  </Text>\\n                </TouchableOpacity>\\n              )}\\n              <Text style={styles.charCount}>{certificateName.length}/500 characters</Text>\\n            </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating Step 4 UI render code in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 303: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update step 5 Certification preview card to show all uploaded certificates side-by-side in square thumbnails.\"",
+  "EndLine": "1055",
+  "Instruction": "\"Replace singular certificate preview block with multiple certificate preview block inside the Step 5 view card.\"",
+  "ReplacementContent": "\"              {/* Certification (Optional) Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Certification (Optional)</Text>\\n                  <TouchableOpacity\\n                    style={styles.editCircleBtn}\\n                    onPress={() => setCurrentStep(4)}\\n                    activeOpacity={0.7}\\n                  >\\n                    <EditIcon size={20} color=\\\"#666666\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n                {certificates.length > 0 ? (\\n                  <View style={{ flexDirection: \\\"row\\\", flexWrap: \\\"wrap\\\", gap: 12, marginTop: 8 }}>\\n                    {certificates.map((cert, index) => (\\n                      <View key={index} style={styles.certificatePreviewContainer}>\\n                        <Image source={{ uri: cert.uri }} style={styles.certificatePreviewImage} />\\n                      </View>\\n                    ))}\\n                  </View>\\n                ) : (\\n                  <Text style={styles.previewAboutMeText}>\\n                    No certificate uploaded.\\n                  </Text>\\n                )}\\n              </View>\"",
+  "StartLine": "1034",
+  "TargetContent": "\"              {/* Certification (Optional) Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Certification (Optional)</Text>\\n                  <TouchableOpacity\\n                    style={styles.editCircleBtn}\\n                    onPress={() => setCurrentStep(4)}\\n                    activeOpacity={0.7}\\n                  >\\n                    <EditIcon size={20} color=\\\"#666666\\\" />\\n                  </TouchableOpacity>\\n                </View>\\n                {certificateUri ? (\\n                  <View style={[styles.certificatePreviewContainer, { marginTop: 8 }]}>\\n                    <Image source={{ uri: certificateUri }} style={styles.certificatePreviewImage} />\\n                  </View>\\n                ) : (\\n                  <Text style={styles.previewAboutMeText}>\\n                    No certificate uploaded.\\n                  </Text>\\n                )}\\n              </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating Step 5 Review preview view in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 311: multi_replace_file_content ===
+{
+  "Description": "\"Add certificates array and map first certificate as fallback properties in all 5 modal handlers.\"",
+  "Instruction": "\"Update all 5 profileData compile blocks to include certificates array and fallbacks.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":1172,\"ReplacementContent\":\"            experienceText,\\n            certificates,\\n            certificateName: certificates[0]?.name || \\\"\\\",\\n            certificateUri: certificates[0]?.uri || \\\"\\\",\\n            openToNegotiation,\",\"StartLine\":1165,\"TargetContent\":\"            experienceText,\\n            certificateName,\\n            certificateUri,\\n            openToNegotiation,\"},{\"AllowMultiple\":false,\"EndLine\":1212,\"ReplacementContent\":\"              experienceText,\\n              certificates,\\n              certificateName: certificates[0]?.name || \\\"\\\",\\n              certificateUri: certificates[0]?.uri || \\\"\\\",\\n              openToNegotiation,\",\"StartLine\":1205,\"TargetContent\":\"              experienceText,\\n              certificateName,\\n              certificateUri,\\n              openToNegotiation,\"},{\"AllowMultiple\":false,\"EndLine\":1254,\"ReplacementContent\":\"                  experienceText,\\n                  certificates,\\n                  certificateName: certificates[0]?.name || \\\"\\\",\\n                  certificateUri: certificates[0]?.uri || \\\"\\\",\\n                  openToNegotiation,\",\"StartLine\":1247,\"TargetContent\":\"                  experienceText,\\n                  certificateName,\\n                  certificateUri,\\n                  openToNegotiation,\"},{\"AllowMultiple\":false,\"EndLine\":1324,\"ReplacementContent\":\"                      experienceText,\\n                      certificates,\\n                      certificateName: certificates[0]?.name || \\\"\\\",\\n                      certificateUri: certificates[0]?.uri || \\\"\\\",\\n                      openToNegotiation,\",\"StartLine\":1317,\"TargetContent\":\"                      experienceText,\\n                      certificateName,\\n                      certificateUri,\\n                      openToNegotiation,\"},{\"AllowMultiple\":false,\"EndLine\":1368,\"ReplacementContent\":\"                      experienceText,\\n                      certificates,\\n                      certificateName: certificates[0]?.n\n<truncated 320 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating modal handlers in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 317: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add uploadBoxSmall and uploadTextSmall styles to support small dashed square upload card next to uploaded certificate previews.\"",
+  "EndLine": "1843",
+  "Instruction": "\"Add uploadBoxSmall and uploadTextSmall style rules in stylesheet.\"",
+  "ReplacementContent": "\"  uploadText: {\\n    fontSize: 16,\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    color: \\\"#8D848F\\\",\\n    marginTop: 4,\\n  },\\n  uploadBoxSmall: {\\n    width: 120,\\n    height: 120,\\n    borderRadius: 16,\\n    borderWidth: 1.5,\\n    borderColor: \\\"#DDDDDD\\\",\\n    borderStyle: \\\"dashed\\\",\\n    alignItems: \\\"center\\\",\\n    justifyContent: \\\"center\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    marginTop: 8,\\n  },\\n  uploadTextSmall: {\\n    fontSize: 12,\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    color: \\\"#8D848F\\\",\\n    marginTop: 2,\\n  },\"",
+  "StartLine": "1837",
+  "TargetContent": "\"  uploadText: {\\n    fontSize: 16,\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    color: \\\"#8D848F\\\",\\n    marginTop: 4,\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adding uploadBoxSmall styles to CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 321: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough outlines the multi-certificate implementation (limit 3) with side-by-side square previews, red close buttons, and backward-compatible state mapping.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support (Limit 3)\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loading**: Seamlessly parses single `certificateUri` if editing an older profile.\\n- **Maximum Count Verification**: Added a validation check limiting uploads to exactly `3` items.\\n- **Individual Deletion**: Supports removing a certificate by its array index.\\n\\n```javascript\\n  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n```\\n\\n---\\n\\n### 2. Beautiful Flex Layout\\nUpdated **Step 4 (Pricing Setup & Certification)** and **Step 5 (Profile Review)** to display previews inline with responsive wrap behavior:\\n- **Dashed Upload Zone**:\\n  - Displays as a wide block initially when no certificates exist to draw initial user interaction.\\n  - Automatically transitions to a grid layout of small square thumbnails (`120x120`) once at least one certificate is added.\\n  - Renders a smaller `120x120` dashed upload block side-by-side with the thumbnails if less than `3` certificates are uploaded.\\n- **Limit/Counter Label**: Shows a dynamic count of `<uploaded_count>/3 uploaded`.\\n\\n```javascript\\n  uploadBoxSmall: {\\n    width: 120,\\n    height: 12\n<truncated 1413 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document multi-certificate implementation details and verification items.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with multi-certificate details\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 337: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update previewCardGreenText style class to Montserrat 16px SemiBold #333333.\"",
+  "EndLine": "1953",
+  "Instruction": "\"Update previewCardGreenText stylesheet properties.\"",
+  "ReplacementContent": "\"  previewCardGreenText: {\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    fontWeight: \\\"600\\\",\\n    fontSize: 16,\\n    lineHeight: 16,\\n    color: \\\"#333333\\\",\\n  },\"",
+  "StartLine": "1949",
+  "TargetContent": "\"  previewCardGreenText: {\\n    fontSize: 12,\\n    fontFamily: \\\"Poppins_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating previewCardGreenText styles in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 341: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough covers the multi-certificate implementation and Step 5 Professional Role text style upgrades to Montserrat SemiBold 16px.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography enhancements.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loading**: Seamlessly parses single `certificateUri` if editing an older profile.\\n- **Maximum Count Verification**: Added a validation check limiting uploads to exactly `3` items.\\n- **Individual Deletion**: Supports removing a certificate by its array index.\\n\\n```javascript\\n  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n```\\n\\n---\\n\\n### 2. Step 5 Review Typography\\nUpdated the styling of the **Professional Role** value inside Step 5 (Profile Review) to meet the requested Figma specifications:\\n- **Font**: Montserrat\\n- **Weight**: 600 (SemiBold)\\n- **Size**: 16px\\n- **Line Height**: 100% (16px)\\n- **Color**: `#333333`\\n\\n```diff\\n   previewCardGreenText: {\\n-    fontSize: 12,\\n-    fontFamily: \\\"Poppins_600SemiBold\\\",\\n-    color: \\\"#15A765\\\",\\n+    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n+    fontWeight: \\\"600\\\",\\n+    fontSize: 16,\\n+    lineHeight: 16,\\n+    color: \\\"#333333\\\",\\n   },\\n```\\n\\n---\\n\\n### 3. Beautiful Flex Layout\\nUpdated **Step 4 (Pricin\n<truncated 2226 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document multiple certificate support and Step 5 typography enhancements.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Updating walkthrough.md with typography changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 343: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough covers the multi-certificate implementation and Step 5 Professional Role text style upgrades to Montserrat SemiBold 16px.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography enhancements.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loading**: Seamlessly parses single `certificateUri` if editing an older profile.\\n- **Maximum Count Verification**: Added a validation check limiting uploads to exactly `3` items.\\n- **Individual Deletion**: Supports removing a certificate by its array index.\\n\\n```javascript\\n  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n```\\n\\n---\\n\\n### 2. Step 5 Review Typography\\nUpdated the styling of the **Professional Role** value inside Step 5 (Profile Review) to meet the requested Figma specifications:\\n- **Font**: Montserrat\\n- **Weight**: 600 (SemiBold)\\n- **Size**: 16px\\n- **Line Height**: 100% (16px)\\n- **Color**: `#333333`\\n\\n```diff\\n   previewCardGreenText: {\\n-    fontSize: 12,\\n-    fontFamily: \\\"Poppins_600SemiBold\\\",\\n-    color: \\\"#15A765\\\",\\n+    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n+    fontWeight: \\\"600\\\",\\n+    fontSize: 16,\\n+    lineHeight: 16,\\n+    color: \\\"#333333\\\",\\n   },\\n```\\n\\n---\\n\\n### 3. Beautiful Flex Layout\\nUpdated **Step 4 (Pricin\n<truncated 2226 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document multiple certificate support and Step 5 typography enhancements.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Creating walkthrough.md with typography changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 349: multi_replace_file_content ===
+{
+  "Description": "\"Set explicit card header margins in Step 5: 8px for Professional Role, 24px for Sports & Location, Experience & Availability, and Pricing.\"",
+  "Instruction": "\"Apply style overrides for previewCardHeader margins.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":937,\"ReplacementContent\":\"              {/* Sports & Location Card */}\\n              <View style={styles.previewCard}>\\n                <View style={[styles.previewCardHeader, { marginBottom: 24 }]}>\\n                  <Text style={styles.previewCardTitle}>Sports & Location</Text>\",\"StartLine\":925,\"TargetContent\":\"              {/* Sports & Location Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Sports & Location</Text>\"},{\"AllowMultiple\":false,\"EndLine\":965,\"ReplacementContent\":\"              {/* Experience & Availability Card */}\\n              <View style={styles.previewCard}>\\n                <View style={[styles.previewCardHeader, { marginBottom: 24 }]}>\\n                  <Text style={styles.previewCardTitle}>Experience & Availability</Text>\",\"StartLine\":953,\"TargetContent\":\"              {/* Experience & Availability Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Experience & Availability</Text>\"},{\"AllowMultiple\":false,\"EndLine\":997,\"ReplacementContent\":\"              {/* Pricing Card */}\\n              <View style={styles.previewCard}>\\n                <View style={[styles.previewCardHeader, { marginBottom: 24 }]}>\\n                  <Text style={styles.previewCardTitle}>Pricing</Text>\",\"StartLine\":985,\"TargetContent\":\"              {/* Pricing Card */}\\n              <View style={styles.previewCard}>\\n                <View style={styles.previewCardHeader}>\\n                  <Text style={styles.previewCardTitle}>Pricing</Text>\"}]",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Adjusting card header margins in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 353: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough covers the multi-certificate implementation, Step 5 typography upgrades, and Figma-spec spacing margins for review cards.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography and margin spacing adjustments.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loading**: Seamlessly parses single `certificateUri` if editing an older profile.\\n- **Maximum Count Verification**: Added a validation check limiting uploads to exactly `3` items.\\n- **Individual Deletion**: Supports removing a certificate by its array index.\\n\\n```javascript\\n  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n```\\n\\n---\\n\\n### 2. Step 5 Review Typography & Margins\\nUpdated the layouts inside Step 5 (Profile Review) to meet the requested Figma specifications:\\n- **Professional Role**:\\n  - Value Font: Montserrat SemiBold 16px `#333333` with 100% line height.\\n  - Spacing Gap (Header to Value): Exactly **8 px** (default card header `marginBottom`).\\n- **Sports & Location**:\\n  - Spacing Gap (Header to \\\"Sports :\\\"): Increased exactly to **24 px**.\\n- **Experience & Availability**:\\n  - Spacing Gap (Header to \\\"Experience Level :\\\"): Increased exactly to **24 px**.\\n- **Pricing**:\\n  - Spacing Gap (Header to green rate box): Increas\n<truncated 2639 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document card header spacing margin adjustments.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Updating walkthrough.md with spacing details\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 362: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Fix ReferenceError for certificateName inside handleContinue console.log statement.\"",
+  "EndLine": "360",
+  "Instruction": "\"Replace singular certificateName reference with certificates in console.log statement inside handleContinue.\"",
+  "ReplacementContent": "\"      console.log(editProfile ? \\\"Profile updated:\\\" : \\\"Profile created:\\\", {\\n        selectedRole,\\n        selectedSports,\\n        city,\\n        selectedExperience,\\n        selectedAvailability,\\n        selectedRateType,\\n        rateAmount,\\n        experienceText,\\n        certificates,\\n        openToNegotiation,\\n      });\"",
+  "StartLine": "345",
+  "TargetContent": "\"      console.log(editProfile ? \\\"Profile updated:\\\" : \\\"Profile created:\\\", {\\n        selectedRole,\\n        selectedSports,\\n        city,\\n        selectedExperience,\\n        selectedAvailability,\\n        selectedRateType,\\n        rateAmount,\\n        experienceText,\\n        certificateName,\\n        openToNegotiation,\\n      });\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Fixing ReferenceError in handleContinue block\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 366: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 style upgrades, figma gaps, and a bugfix resolving a Property 'certificateName' ReferenceError.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, and a resolved ReferenceError.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loading**: Seamlessly parses single `certificateUri` if editing an older profile.\\n- **Maximum Count Verification**: Added a validation check limiting uploads to exactly `3` items.\\n- **Individual Deletion**: Supports removing a certificate by its array index.\\n\\n```javascript\\n  const [certificates, setCertificates] = useState(() => {\\n    if (editProfile?.certificates) return editProfile.certificates;\\n    if (editProfile?.certificateUri) {\\n      return [{ uri: editProfile.certificateUri, name: editProfile.certificateName || \\\"certificate.jpg\\\" }];\\n    }\\n    return [];\\n  });\\n```\\n\\n---\\n\\n### 2. Resolved ReferenceError Bug\\n- **Issue**: A `Property 'certificateName' doesn't exist` ReferenceError was thrown when executing `handleContinue` due to a remaining debug console log statement using the removed singular `certificateName` variable.\\n- **Fix**: Replaced the reference with `certificates` so the console log correctly logs the complete array of uploaded certificates without throwing reference errors.\\n\\n```diff\\n       console.log(editProfile ? \\\"Profile updated:\\\" : \\\"Profile created:\\\", {\\n         selectedRole,\\n         selectedSports,\\n         city,\\n         \n<truncated 3447 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the Property 'certificateName' ReferenceError bugfix in handleContinue.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with the ReferenceError resolution details\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 372: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Load party.svg asset using expo-asset module.\"",
+  "EndLine": "143",
+  "Instruction": "\"Add partyUri declaration to load local party.svg asset.\"",
+  "ReplacementContent": "\"const calenderUri = Asset.fromModule(require(\\\"../../../assets/calender.svg\\\")).uri;\\nconst calendarStarUri = Asset.fromModule(require(\\\"../../../assets/calendar-star 1.svg\\\")).uri;\\nconst pendingUri = Asset.fromModule(require(\\\"../../../assets/pending.svg\\\")).uri;\\nconst trophyStarUri = Asset.fromModule(require(\\\"../../../assets/trophy-star (1) 1.svg\\\")).uri;\\nconst partyUri = Asset.fromModule(require(\\\"../../../assets/party.svg\\\")).uri;\"",
+  "StartLine": "137",
+  "TargetContent": "\"const calenderUri = Asset.fromModule(require(\\\"../../../assets/calender.svg\\\")).uri;\\nconst calendarStarUri = Asset.fromModule(require(\\\"../../../assets/calendar-star 1.svg\\\")).uri;\\nconst pendingUri = Asset.fromModule(require(\\\"../../../assets/pending.svg\\\")).uri;\\nconst trophyStarUri = Asset.fromModule(require(\\\"../../../assets/trophy-star (1) 1.svg\\\")).uri;\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Declaring partyUri SVG asset in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 376: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Replace success modal PNG illustration with SvgUri using party.svg.\"",
+  "EndLine": "1279",
+  "Instruction": "\"Replacecelebration PNG image with Centered SvgUri party popper.\"",
+  "ReplacementContent": "\"            {/* White card content */}\\n            <Pressable style={styles.successModalContent} onPress={(e) => e.stopPropagation()}>\\n              {/* Party popper SVG */}\\n              <SvgUri\\n                uri={partyUri}\\n                width={120}\\n                height={120}\\n                style={{ alignSelf: \\\"center\\\", marginBottom: 16 }}\\n              />\"",
+  "StartLine": "1271",
+  "TargetContent": "\"            {/* White card content */}\\n            <Pressable style={styles.successModalContent} onPress={(e) => e.stopPropagation()}>\\n              {/* Party popper image */}\\n              <Image\\n                source={require(\\\"../../../assets/celebration.png\\\")}\\n                style={styles.successModalImage}\\n                resizeMode=\\\"contain\\\"\\n              />\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Replacing celebration PNG image with party.svg in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 382: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update success modal stylesheet definitions with the exact Figma design specification for typography, spacing, dimensions, borders, and color tokens.\"",
+  "EndLine": "2127",
+  "Instruction": "\"Update successModal style definitions inside stylesheet.\"",
+  "ReplacementContent": "\"  successModalContainer: {\\n    width: \\\"100%\\\",\\n    maxWidth: 360,\\n    alignItems: \\\"flex-end\\\",\\n  },\\n  successModalContent: {\\n    width: \\\"100%\\\",\\n    maxWidth: 360,\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    borderRadius: 24,\\n    padding: 24,\\n    alignItems: \\\"center\\\",\\n    position: \\\"relative\\\",\\n    shadowColor: \\\"#000\\\",\\n    shadowOffset: { width: 0, height: 10 },\\n    shadowOpacity: 0.15,\\n    shadowRadius: 16,\\n    elevation: 10,\\n  },\\n  successModalCloseBtn: {\\n    width: 44,\\n    height: 44,\\n    borderRadius: 22,\\n    borderWidth: 1,\\n    borderColor: \\\"#D6D6D6\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    shadowColor: \\\"#000\\\",\\n    shadowOffset: { width: 0, height: 2 },\\n    shadowOpacity: 0.1,\\n    shadowRadius: 3,\\n    elevation: 3,\\n    marginBottom: 8,\\n  },\\n  successModalImage: {\\n    width: 150,\\n    height: 150,\\n    marginBottom: 16,\\n  },\\n  successModalTitle: {\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    fontWeight: \\\"600\\\",\\n    fontSize: 20,\\n    lineHeight: 24,\\n    color: \\\"#1A181B\\\",\\n    textAlign: \\\"center\\\",\\n    marginBottom: 4,\\n  },\\n  successModalSubtitle: {\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    fontWeight: \\\"400\\\",\\n    fontSize: 14,\\n    lineHeight: 19, // 135%\\n    color: \\\"#262626\\\",\\n    textAlign: \\\"center\\\",\\n    marginBottom: 30,\\n  },\\n  successModalButtonRow: {\\n    flexDirection: \\\"row\\\",\\n    width: \\\"100%\\\",\\n    gap: 12,\\n  },\\n  successModalOutlineBtn: {\\n    width: 164.5,\\n    height: 48,\\n    borderRadius: 16,\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    paddingVertical: 8,\\n    paddingHorizontal: 16,\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\\n  successModalSolidBtn: {\\n    width: 164.5,\\n    height: 48,\\n    borderRadius: 16,\\n    backgroundColor: \\\"#15A765\\\",\\n    justifyContent: \n<truncated 191 bytes>",
+  "StartLine": "2038",
+  "TargetContent": "\"  successModalContainer: {\\n    width: \\\"100%\\\",\\n    maxWidth: 340,\\n    alignItems: \\\"flex-end\\\",\\n  },\\n  successModalContent: {\\n    width: \\\"100%\\\",\\n    maxWidth: 340,\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    borderRadius: 24,\\n    padding: 24,\\n    alignItems: \\\"center\\\",\\n    position: \\\"relative\\\",\\n    shadowColor: \\\"#000\\\",\\n    shadowOffset: { width: 0, height: 10 },\\n    shadowOpacity: 0.15,\\n    shadowRadius: 16,\\n    elevation: 10,\\n  },\\n  successModalCloseBtn: {\\n    width: 44,\\n    height: 44,\\n    borderRadius: 22,\\n    borderWidth: 1,\\n    borderColor: \\\"#D6D6D6\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    shadowColor: \\\"#000\\\",\\n    shadowOffset: { width: 0, height: 2 },\\n    shadowOpacity: 0.1,\\n    shadowRadius: 3,\\n    elevation: 3,\\n    marginBottom: 8,\\n  },\\n  successModalImage: {\\n    width: 150,\\n    height: 150,\\n    marginBottom: 16,\\n  },\\n  successModalTitle: {\\n    fontSize: 20,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#1F1F1F\\\",\\n    textAlign: \\\"center\\\",\\n    marginBottom: 8,\\n    paddingHorizontal: 8,\\n  },\\n  successModalSubtitle: {\\n    fontSize: 14,\\n    fontFamily: \\\"Poppins_400Regular\\\",\\n    color: \\\"#666666\\\",\\n    textAlign: \\\"center\\\",\\n    lineHeight: 20,\\n    marginBottom: 24,\\n  },\\n  successModalButtonRow: {\\n    flexDirection: \\\"row\\\",\\n    width: \\\"100%\\\",\\n    gap: 12,\\n  },\\n  successModalOutlineBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 24,\\n    borderWidth: 1.5,\\n    borderColor: \\\"#12B76A\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#12B76A\\\",\\n  },\\n  successModalSolidBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 24,\\n    backgroundColor: \\\"#12B76A\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n  },\\n  successModalSolidBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\n<truncated 58 bytes>",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating successModal style declarations\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 386: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, and Figma-spec success modal upgrades.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, and the success modal design enhancements.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Success Modal Redesign (Figma Specifications)\\nUpdated the popup modal shown after successfully creating/saving a professional profile:\\n- **Party Popper SVG Icon**: Replaced celebration PNG image with centered `party.svg` icon.\\n- **Success Title (`You\u2019re Now a ...!`)**:\\n  - Font: Montserrat SemiBold 20px\\n  - Spacing Gap (`marginBottom`): **4 px**\\n  - Text Align: centered\\n  - Color: `#1A181B`\\n- **Success Subtitle (`Your ... profile is ready. What would you like to do next?`)**:\\n  - Font: Poppins Regular 14px\\n  - Line Height: 135% (19px)\\n  - Spacing Gap (`marginBottom`): **30 px**\\n  - Text Align: centered\\n  - Color: `#262626`\\n- **View Profile Outline Button**:\\n  - Width: **164.5**, Height: **48**\\n  - Border Radius: **16px**\\n  - Padding: `8px` top/bottom, `16px` left/right\\n  - Border/Text Color: `#15A765` (1px solid)\\n- **Browse Job Solid Button**:\\n  - Width: **164.5**, Height: **48**\\n  - Border Radius: **16px**\\n  - Padding: `16px`\\n  - Background Color: `#15A765`\\n- **Container Adjustments**: Increased modal card and container max-widths to **360px** to perfectly align and prevent the custom-width buttons from overflowing.\\n\\n---\\n\\n### 2. Updated State & Handlers\\nIn [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js), we converted singular state variables (`certificateName`, `certificateUri`) into a unified `certificates` state array of `{ uri, name }` objects:\\n- **Fallback Loa\n<truncated 3471 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document success modal layout, button, and typography modifications.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with success modal changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 396: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Change fixed success modal button widths to flex: 1 to prevent cards from overflowing on standard screen sizes.\"",
+  "EndLine": "2126",
+  "Instruction": "\"Change button widths to flex: 1 in stylesheet definition.\"",
+  "ReplacementContent": "\"  successModalOutlineBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    paddingVertical: 8,\\n    paddingHorizontal: 16,\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\\n  successModalSolidBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    backgroundColor: \\\"#15A765\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    padding: 16,\\n  },\"",
+  "StartLine": "2101",
+  "TargetContent": "\"  successModalOutlineBtn: {\\n    width: 164.5,\\n    height: 48,\\n    borderRadius: 16,\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    paddingVertical: 8,\\n    paddingHorizontal: 16,\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\\n  successModalSolidBtn: {\\n    width: 164.5,\\n    height: 48,\\n    borderRadius: 16,\\n    backgroundColor: \\\"#15A765\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    padding: 16,\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Changing fixed success modal button widths to flex: 1\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 400: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, and Figma-spec success modal upgrades with dynamic flex widths.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, and a layout flex overflow fix.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Success Modal Flex Width Fix\\n- **Issue**: Due to strict `padding: 24` on the backdrop, the available screen width inside the popup card on standard mobile screens is smaller than the combined width of both custom buttons (`164.5 + 164.5 = 329px` plus margins). This caused the solid **Browse job** button to overflow/stick out of the white rounded card on the right edge.\\n- **Fix**: Replaced the fixed `width: 164.5` on the outline and solid button styles with `flex: 1` inside their row flexbox. Now, the two buttons split the horizontal available row space exactly 50/50, scaling dynamically on all device sizes while remaining perfectly bound within the card padding borders.\\n\\n```diff\\n   successModalOutlineBtn: {\\n-    width: 164.5,\\n+    flex: 1,\\n     height: 48,\\n     borderRadius: 16,\\n     borderWidth: 1,\\n     borderColor: \\\"#15A765\\\",\\n     backgroundColor: \\\"#FFFFFF\\\",\\n     justifyContent: \\\"center\\\",\\n     alignItems: \\\"center\\\",\\n     paddingVertical: 8,\\n     paddingHorizontal: 16,\\n   },\\n   successModalSolidBtn: {\\n-    width: 164.5,\\n+    flex: 1,\\n     height: 48,\\n     borderRadius: 16,\\n     backgroundColor: \\\"#15A765\\\",\\n     justifyContent: \\\"center\\\",\\n     alignItems: \\\"center\\\",\\n     padding: 16,\\n   },\\n```\\n\\n---\\n\\n### 2. Success Modal Redesign (Figma Specifications)\\nUpdated the popup modal shown after successfully creating/saving a professional profile:\\n- **Party Popper SVG Icon**: Replaced celebration PNG image with centered `party.svg` icon.\\n- \n<truncated 3377 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the success modal flex-layout overflow bugfix.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with button flex changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 406: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Remove vertical paddings on success modal buttons to ensure text centers perfectly inside fixed height containers.\"",
+  "EndLine": "2126",
+  "Instruction": "\"Remove padding attributes from outline and solid button styles in stylesheet.\"",
+  "ReplacementContent": "\"  successModalOutlineBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\\n  successModalSolidBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    backgroundColor: \\\"#15A765\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n  },\"",
+  "StartLine": "2101",
+  "TargetContent": "\"  successModalOutlineBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    borderWidth: 1,\\n    borderColor: \\\"#15A765\\\",\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    paddingVertical: 8,\\n    paddingHorizontal: 16,\\n  },\\n  successModalOutlineBtnText: {\\n    fontSize: 15,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#15A765\\\",\\n  },\\n  successModalSolidBtn: {\\n    flex: 1,\\n    height: 48,\\n    borderRadius: 16,\\n    backgroundColor: \\\"#15A765\\\",\\n    justifyContent: \\\"center\\\",\\n    alignItems: \\\"center\\\",\\n    padding: 16,\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Removing padding from success modal buttons to fix text centering\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 410: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, and Figma-spec success modal upgrades with dynamic flex widths and centered text.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, and button alignment fixes.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Button Text Centering Fix\\n- **Issue**: The text inside the solid and outline buttons was slightly off-center vertically. This occurred because React Native's flexbox alignment (`justifyContent: \\\"center\\\", alignItems: \\\"center\\\"`) was fighting with explicit inner padding bounds inside a fixed `height: 48` container.\\n- **Fix**: Removed all padding constraints (`padding`, `paddingVertical`, `paddingHorizontal`) from both `successModalOutlineBtn` and `successModalSolidBtn` styles. Centering is now handled purely by flexbox properties inside the 48px boundary, rendering both \\\"View Profile\\\" and \\\"Browse job\\\" texts **perfectly centered** vertically and horizontally.\\n\\n```diff\\n   successModalOutlineBtn: {\\n     flex: 1,\\n     height: 48,\\n     borderRadius: 16,\\n     borderWidth: 1,\\n     borderColor: \\\"#15A765\\\",\\n     backgroundColor: \\\"#FFFFFF\\\",\\n     justifyContent: \\\"center\\\",\\n     alignItems: \\\"center\\\",\\n-    paddingVertical: 8,\\n-    paddingHorizontal: 16,\\n   },\\n   successModalSolidBtn: {\\n     flex: 1,\\n     height: 48,\\n     borderRadius: 16,\\n     backgroundColor: \\\"#15A765\\\",\\n     justifyContent: \\\"center\\\",\\n     alignItems: \\\"center\\\",\\n-    padding: 16,\\n   },\\n```\\n\\n---\\n\\n### 2. Success Modal Flex Width Fix\\n- **Issue**: Due to strict `padding: 24` on the backdrop, the available screen width inside the popup card on standard mobile screens is smaller than the combined width of both custom buttons (`164.5 + 164.5 = 329px` plus margins). This caused the solid\n<truncated 4047 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the success modal button text centering fix.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with button text centering changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 434: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Add detailCertPreviewContainer and detailCertPreviewImage styles to BrowseJobs.js stylesheet.\"",
+  "EndLine": "3386",
+  "Instruction": "\"Insert new stylesheet definitions under certChipSmallText style rules.\"",
+  "ReplacementContent": "\"  certChipSmallText: {\\n    fontFamily: \\\"Poppins_500Medium\\\",\\n    fontSize: 12,\\n    color: \\\"#6941C6\\\",\\n  },\\n  detailCertPreviewContainer: {\\n    width: 100,\\n    height: 100,\\n    borderRadius: 12,\\n    backgroundColor: \\\"#F3F4F6\\\",\\n    overflow: \\\"hidden\\\",\\n  },\\n  detailCertPreviewImage: {\\n    width: \\\"100%\\\",\\n    height: \\\"100%\\\",\\n    resizeMode: \\\"cover\\\",\\n  },\"",
+  "StartLine": "3381",
+  "TargetContent": "\"  certChipSmallText: {\\n    fontFamily: \\\"Poppins_500Medium\\\",\\n    fontSize: 12,\\n    color: \\\"#6941C6\\\",\\n  },\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Adding certificate styles to BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 438: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Render actual uploaded certificate image previews in profile details bottom sheet with backwards compatible fallbacks.\"",
+  "EndLine": "1838",
+  "Instruction": "\"Replace chips-only certificate render block with image preview rendering support.\"",
+  "ReplacementContent": "\"                {/* Certifications Section */}\\n                <View style={styles.detailSectionWrap}>\\n                  <Text style={styles.detailCardSectionTitle}>Certifications</Text>\\n                  {selectedProfileForView.certificates && selectedProfileForView.certificates.length > 0 ? (\\n                    <View style={{ flexDirection: \\\"row\\\", flexWrap: \\\"wrap\\\", gap: 12, marginTop: 8 }}>\\n                      {selectedProfileForView.certificates.map((c, idx) => (\\n                        <View key={idx} style={styles.detailCertPreviewContainer}>\\n                          <Image\\n                            source={{ uri: c.uri }}\\n                            style={styles.detailCertPreviewImage}\\n                          />\\n                        </View>\\n                      ))}\\n                    </View>\\n                  ) : selectedProfileForView.certificateUri ? (\\n                    <View style={{ flexDirection: \\\"row\\\", flexWrap: \\\"wrap\\\", gap: 12, marginTop: 8 }}>\\n                      <View style={styles.detailCertPreviewContainer}>\\n                        <Image\\n                          source={{ uri: selectedProfileForView.certificateUri }}\\n                          style={styles.detailCertPreviewImage}\\n                        />\\n                      </View>\\n                    </View>\\n                  ) : (\\n                    <View style={styles.detailChipsRow}>\\n                      {(() => {\\n                        const cert = selectedProfileForView.certificateName;\\n                        let chips = [\\\"ICC Level 2 Umpire\\\", \\\"UEFA B License\\\"];\\n                        if (cert && cert.trim()) {\\n                          const cleanedCert = cert.replace(/\\\\.[^/.]+$/, \\\"\\\");\\n                          chips = [cleanedCert, \\\"Verified Professional\\\"];\\n                        }\\n                        return chips.map((c, i) => (\\n                          <View key={i} style={styles.certChipSmall}>\\n                            <Text style={styles.certChip\n<truncated 191 bytes>",
+  "StartLine": "1819",
+  "TargetContent": "\"                {/* Certifications Section */}\\n                <View style={styles.detailSectionWrap}>\\n                  <Text style={styles.detailCardSectionTitle}>Certifications</Text>\\n                  <View style={styles.detailChipsRow}>\\n                    {(() => {\\n                      const cert = selectedProfileForView.certificateName;\\n                      let chips = [\\\"ICC Level 2 Umpire\\\", \\\"UEFA B License\\\"];\\n                      if (cert && cert.trim()) {\\n                        const cleanedCert = cert.replace(/\\\\.[^/.]+$/, \\\"\\\");\\n                        chips = [cleanedCert, \\\"Verified Professional\\\"];\\n                      }\\n                      return chips.map((c, i) => (\\n                        <View key={i} style={styles.certChipSmall}>\\n                          <Text style={styles.certChipSmallText}>{c}</Text>\\n                        </View>\\n                      ));\\n                    })()}\\n                  </View>\\n                </View>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Updating bottom sheet certifications section in BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 442: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, Figma-spec success modal, and player profile view certifications image rendering.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, and player profile bottom sheet certifications image rendering.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. View Profile Certifications Image Rendering\\nUpdated [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js) so that when navigating to the player's profile via \\\"View Profile\\\" in the success modal (or tapping a card on the dashboard), the **Certifications** section renders actual uploaded certificate image previews instead of just plain text chips:\\n- **Dynamic Image Render**: Displays a row of all uploaded certificates (`selectedProfileForView.certificates`) in a square format.\\n- **Single Fallback Render**: Automatically falls back to `certificateUri` if only a single old-format certificate is loaded on the profile.\\n- **Visual Design**: Styled with a rounded-corner layout `detailCertPreviewContainer` (`width: 100`, `height: 100`, `borderRadius: 12`) and cover aspect ratio.\\n- **Default Chips Fallback**: Automatically preserves the original text chips if the profile doesn't contain any uploaded files.\\n\\n```javascript\\n  detailCertPreviewContainer: {\\n    width: 100,\\n    height: 100,\\n    borderRadius: 12,\\n    backgroundColor: \\\"#F3F4F6\\\",\\n    overflow: \\\"hidden\\\",\\n  },\\n  detailCertPreviewImage: {\\n    width: \\\"100%\\\",\\n    height: \\\"100%\\\",\\n    resizeMode: \\\"cover\\\",\\n  },\\n```\\n\\n---\\n\\n### 2. Button Text Centering Fix\\n- **Issue**: The text inside the solid and outline buttons was slightly off-center vertically. This occurred because React Native's flexbox alignment (`justi\n<truncated 4983 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the profile view bottom sheet certifications image rendering features.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with certifications view changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 448: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Update detail sheet rating fallback from 4.8 to '-' for profiles without ratings.\"",
+  "EndLine": "1740",
+  "Instruction": "\"Replace rating fallback '4.8' with '-' in BrowseJobs.js.\"",
+  "ReplacementContent": "\"                        <Text style={styles.detailRatingText}>\\n                          {selectedProfileForView.rating || \\\"-\\\"}\\n                        </Text>\"",
+  "StartLine": "1737",
+  "TargetContent": "\"                        <Text style={styles.detailRatingText}>\\n                          {selectedProfileForView.rating || \\\"4.8\\\"}\\n                        </Text>\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Updating rating fallback in BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 450: multi_replace_file_content ===
+{
+  "Description": "\"Update default initial rating for newly created player profiles from '4.8' to '-' in all modal callbacks.\"",
+  "Instruction": "\"Replace initial rating default values with '-' in profileData.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":1162,\"ReplacementContent\":\"            rating: editProfile?.rating || \\\"-\\\",\",\"StartLine\":1145,\"TargetContent\":\"            rating: editProfile?.rating || \\\"4.8\\\",\"},{\"AllowMultiple\":false,\"EndLine\":1202,\"ReplacementContent\":\"              rating: editProfile?.rating || \\\"-\\\",\",\"StartLine\":1185,\"TargetContent\":\"              rating: editProfile?.rating || \\\"4.8\\\",\"},{\"AllowMultiple\":false,\"EndLine\":1244,\"ReplacementContent\":\"                  rating: editProfile?.rating || \\\"-\\\",\",\"StartLine\":1225,\"TargetContent\":\"                  rating: editProfile?.rating || \\\"4.8\\\",\"},{\"AllowMultiple\":false,\"EndLine\":1314,\"ReplacementContent\":\"                      rating: editProfile?.rating || \\\"-\\\",\",\"StartLine\":1295,\"TargetContent\":\"                      rating: editProfile?.rating || \\\"4.8\\\",\"},{\"AllowMultiple\":false,\"EndLine\":1358,\"ReplacementContent\":\"                      rating: editProfile?.rating || \\\"-\\\",\",\"StartLine\":1340,\"TargetContent\":\"                      rating: editProfile?.rating || \\\"4.8\\\",\"}]",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\CreateProfessionalProfileScreen.js\"",
+  "toolAction": "\"Updating default rating in CreateProfessionalProfileScreen.js\"",
+  "toolSummary": "\"Edit CreateProfessionalProfileScreen.js\""
+}
+
+==================================================
+
+=== STEP 454: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, Figma-spec success modal, certifications bottom sheet image rendering, and initial empty rating setups.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, and initial empty rating setups.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Initial Empty Rating for New Profiles\\n- **Issue**: Newly created professional profiles were defaulting to a rating of `4.8` upon creation. A newly created profile with 0 completed jobs should not have an active rating score.\\n- **Fix**: Replaced the initial rating fallback from `\\\"4.8\\\"` to `\\\"-\\\"` inside the `profileData` creation modal callbacks of [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/CreateProfessionalProfileScreen.js) and the details bottom sheet fallback in [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js).\\n- Now, newly registered professionals start with an elegant and standard initial rating score of `\\\"-\\\"` representing a fresh profile, until their first jobs are reviewed.\\n\\n---\\n\\n### 2. View Profile Certifications Image Rendering\\nUpdated [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js) so that when navigating to the player's profile via \\\"View Profile\\\" in the success modal (or tapping a card on the dashboard), the **Certifications** section renders actual uploaded certificate image previews instead of just plain text chips:\\n- **Dynamic Image Render**: Displays a row of all uploaded certificates (`selectedProfileForView.certificates`) in a square format.\\n- **Single Fallback Render**: Automatically falls back to `certificateUri` if only a single old\n<truncated 5519 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the empty rating fallback initialization for newly created professional profiles.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with empty rating fallback details\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 466: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Remove navigation focus listener that forces a screen tab and filters reset every time BrowseJobs is focused.\"",
+  "EndLine": "445",
+  "Instruction": "\"Remove the useEffect block containing navigation.addListener('focus').\"",
+  "ReplacementContent": "\"\"",
+  "StartLine": "436",
+  "TargetContent": "\"  useEffect(() => {\\n    const unsubscribe = navigation.addListener(\\\"focus\\\", () => {\\n      setActiveTab(\\\"application\\\");\\n      setActiveSubTab(\\\"applications\\\");\\n      setSearch(\\\"\\\");\\n      setSelectedRoles([]);\\n      setSelectedSports([]);\\n    });\\n    return unsubscribe;\\n  }, [navigation]);\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Removing navigation focus listener in BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 470: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, Figma-spec success modal, certifications image rendering, and resolving screen tab refresh issues.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, and navigation tab refresh resolution.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Fixed Screen Focus Refresh / Tab Reset\\n- **Issue**: Toggling active tabs, leaving the screen, or returning to [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js) was causing the entire screen selection to refresh, resetting active tabs and clearing search values back to standard defaults (forcing `\\\"Applications\\\"`).\\n- **Fix**: Removed the aggressive focus listener inside `BrowseJobs.js` that was intercepting the screen's focus state. Now, all tabs, selections, and inputs are preserved correctly in memory as expected when navigating, preventing accidental resets when changing views or returning to \\\"View Profile\\\".\\n\\n```diff\\n-  useEffect(() => {\\n-    const unsubscribe = navigation.addListener(\\\"focus\\\", () => {\\n-      setActiveTab(\\\"application\\\");\\n-      setActiveSubTab(\\\"applications\\\");\\n-      setSearch(\\\"\\\");\\n-      setSelectedRoles([]);\\n-      setSelectedSports([]);\\n-    });\\n-    return unsubscribe;\\n-  }, [navigation]);\\n```\\n\\n---\\n\\n### 2. Initial Empty Rating for New Profiles\\n- **Issue**: Newly created professional profiles were defaulting to a rating of `4.8` upon creation. A newly created profile with 0 completed jobs should not have an active rating score.\\n- **Fix**: Replaced the initial rating fallback from `\\\"4.8\\\"` to `\\\"-\\\"` inside the `profileData` creation modal callbacks of [CreateProfessionalProfileScreen.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/\n<truncated 6521 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the focus refresh tab reset resolution inside BrowseJobs.js.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with screen focus listener changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 478: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Make entire application card clickable to open detail page in BrowseJobs.js.\"",
+  "EndLine": "637",
+  "Instruction": "\"Replace appCard outer View with TouchableOpacity and simplify inner View Details button.\"",
+  "ReplacementContent": "\"  const renderApplicationCard = (app) => {\\n    const status = STATUS_STYLES[app.status] || STATUS_STYLES.Pending;\\n    return (\\n      <TouchableOpacity\\n        key={app.id}\\n        style={styles.appCard}\\n        activeOpacity={0.85}\\n        onPress={() =>\\n          navigation.navigate(\\\"JobDetails\\\", {\\n            jobId: app.id,\\n            status: app.status,\\n            title: app.title,\\n            subtitle: app.venue,\\n            rate: app.rate,\\n          })\\n        }\\n      >\\n        <View style={styles.appTopRow}>\\n          <View style={styles.appLogoWrap}>\\n            <SvgUri\\n              uri={refereeUri}\\n              width=\\\"100%\\\"\\n              height=\\\"100%\\\"\\n            />\\n          </View>\\n          <View style={{ flex: 1, paddingRight: 8 }}>\\n            <View style={{ flexDirection: \\\"row\\\", justifyContent: \\\"space-between\\\", alignItems: \\\"center\\\" }}>\\n              <Text style={styles.appTitle}>{app.title}</Text>\\n              <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>\\n                <Text style={[styles.statusBadgeText, { color: status.text }]}>{app.status}</Text>\\n              </View>\\n            </View>\\n            <Text style={styles.appVenue} numberOfLines={1}>\\n              {app.venue}\\n            </Text>\\n          </View>\\n        </View>\\n\\n        <View style={styles.appDivider} />\\n\\n        <Text style={styles.appAppliedOn}>Applied on {app.appliedOn}</Text>\\n\\n        <View style={styles.appBottomRow}>\\n          <View style={styles.appRateRow}>\\n            <Text style={styles.appRate}>{app.rate} </Text>\\n            <Text style={styles.appRateUnit}>{app.rateUnit}</Text>\\n          </View>\\n          <Text style={styles.viewDetailsLink}>View Details</Text>\\n        </View>\\n      </TouchableOpacity>\\n    );\\n  };\"",
+  "StartLine": "586",
+  "TargetContent": "\"  const renderApplicationCard = (app) => {\\n    const status = STATUS_STYLES[app.status] || STATUS_STYLES.Pending;\\n    return (\\n      <View key={app.id} style={styles.appCard}>\\n        <View style={styles.appTopRow}>\\n          <View style={styles.appLogoWrap}>\\n            <SvgUri\\n              uri={refereeUri}\\n              width=\\\"100%\\\"\\n              height=\\\"100%\\\"\\n            />\\n          </View>\\n          <View style={{ flex: 1, paddingRight: 8 }}>\\n            <View style={{ flexDirection: \\\"row\\\", justifyContent: \\\"space-between\\\", alignItems: \\\"center\\\" }}>\\n              <Text style={styles.appTitle}>{app.title}</Text>\\n              <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>\\n                <Text style={[styles.statusBadgeText, { color: status.text }]}>{app.status}</Text>\\n              </View>\\n            </View>\\n            <Text style={styles.appVenue} numberOfLines={1}>\\n              {app.venue}\\n            </Text>\\n          </View>\\n        </View>\\n\\n        <View style={styles.appDivider} />\\n\\n        <Text style={styles.appAppliedOn}>Applied on {app.appliedOn}</Text>\\n\\n        <View style={styles.appBottomRow}>\\n          <View style={styles.appRateRow}>\\n            <Text style={styles.appRate}>{app.rate} </Text>\\n            <Text style={styles.appRateUnit}>{app.rateUnit}</Text>\\n          </View>\\n          <TouchableOpacity\\n            activeOpacity={0.7}\\n            onPress={() =>\\n              navigation.navigate(\\\"JobDetails\\\", {\\n                jobId: app.id,\\n                status: app.status,\\n                title: app.title,\\n                subtitle: app.venue,\\n                rate: app.rate,\\n              })\\n            }\\n          >\\n            <Text style={styles.viewDetailsLink}>View Details</Text>\\n          </TouchableOpacity>\\n        </View>\\n      </View>\\n    );\\n  };\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Making entire application card clickable\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 482: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, Figma-spec success modal, certifications image rendering, screen focus reset fix, and full application card click navigation support.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, screen focus reset fix, and full application card click navigation.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Full Application Card Click Navigation\\n- **Issue**: Previously, in the `\\\"application\\\"` -> `\\\"applications\\\"` tab, users could only open the job details page by tapping the tiny \\\"View Details\\\" text link on the bottom right. Tapping the card itself did nothing, which felt unintuitive.\\n- **Fix**: Replaced the outer wrapper `<View style={styles.appCard}>` inside the `renderApplicationCard` function in [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js) with a `<TouchableOpacity activeOpacity={0.85} onPress={...}>` wrapper. This maps the entire card container as a single unified touch responder that instantly opens the correct application detail page on press.\\n- **Nested Touch Resolution**: Simplified the inner \\\"View Details\\\" touch responder from a `<TouchableOpacity>` to a styled `<Text style={styles.viewDetailsLink}>View Details</Text>` node. This completely avoids conflicting nested touch responder warnings in React Native while keeping the exact same premium look.\\n\\n```diff\\n   const renderApplicationCard = (app) => {\\n     const status = STATUS_STYLES[app.status] || STATUS_STYLES.Pending;\\n     return (\\n-      <View key={app.id} style={styles.appCard}>\\n+      <TouchableOpacity\\n+        key={app.id}\\n+        style={styles.appCard}\\n+        activeOpacity={0.85}\\n+        onPress={() =>\\n+          navigation.navigate(\\\"JobDetails\\\", {\\n+            jobId: app.id,\\n+\n<truncated 8885 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the full card touch target enhancement for job applications in BrowseJobs.js.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with card click changes\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 490: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Define dynamic stats calculations at the top of BrowseJobs component.\"",
+  "EndLine": "369",
+  "Instruction": "\"Insert dynamicStats array computation under safely extracted route variables in BrowseJobs.js.\"",
+  "ReplacementContent": "\"const BrowseJobs = () => {\\n  const navigation = useNavigation();\\n  const route = useRoute();\\n  const insets = useSafeAreaInsets();\\n\\n  // Dynamic application statistics calculated from the APPLICATIONS array\\n  const totalApplications = APPLICATIONS.length;\\n  const pendingApplications = APPLICATIONS.filter(\\n    (a) => a.status === \\\"Pending\\\" || a.status === \\\"Shortlist\\\"\\n  ).length;\\n  const acceptedApplications = APPLICATIONS.filter((a) => a.status === \\\"Accepted\\\").length;\\n  const rejectedApplications = APPLICATIONS.filter((a) => a.status === \\\"Rejected\\\").length;\\n\\n  const formatStatValue = (val) => (val < 10 ? `0${val}` : `${val}`);\\n\\n  const dynamicStats = [\\n    { label: \\\"Total\\\", value: formatStatValue(totalApplications) },\\n    { label: \\\"Pending\\\", value: formatStatValue(pendingApplications) },\\n    { label: \\\"Accepted\\\", value: formatStatValue(acceptedApplications) },\\n    { label: \\\"Rejected\\\", value: formatStatValue(rejectedApplications) },\\n  ];\"",
+  "StartLine": "366",
+  "TargetContent": "\"const BrowseJobs = () => {\\n  const navigation = useNavigation();\\n  const route = useRoute();\\n  const insets = useSafeAreaInsets();\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Adding dynamicStats definition to BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 494: replace_file_content ===
+{
+  "AllowMultiple": "false",
+  "Description": "\"Map stats row using dynamicStats array in BrowseJobs.js.\"",
+  "EndLine": "813",
+  "Instruction": "\"Change APPLICATION_STATS to dynamicStats inside the application stats row mapping.\"",
+  "ReplacementContent": "\"                    {dynamicStats.map((s) => (\\n                      <View key={s.label} style={styles.statBox}>\\n                        <Text style={styles.statValue}>{s.value}</Text>\\n                        <Text style={styles.statLabel}>{s.label}</Text>\\n                      </View>\\n                    ))}\"",
+  "StartLine": "807",
+  "TargetContent": "\"                    {APPLICATION_STATS.map((s) => (\\n                      <View key={s.label} style={styles.statBox}>\\n                        <Text style={styles.statValue}>{s.value}</Text>\\n                        <Text style={styles.statLabel}>{s.label}</Text>\\n                      </View>\\n                    ))}\"",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Mapping stats row using dynamicStats in BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 498: write_to_file ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"This walkthrough documents multi-certificate selection, Step 5 typography/margins, reference error fix, Figma-spec success modal, certifications image rendering, screen focus reset fix, full card click navigation, and dynamic applications stats updates.\"}",
+  "CodeContent": "\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, screen focus reset fix, full application card click navigation, and dynamic applications statistics.\\n\\n---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 1. Dynamic Application Statistics Row\\n- **Issue**: Previously, the stats boxes (Total, Pending, Accepted, Rejected) in the `\\\"application\\\"` -> `\\\"applications\\\"` tab were mapped from a static, hardcoded constant array (`APPLICATION_STATS`), displaying hardcoded figures (24, 12, 08, 04) that did not change when items were updated.\\n- **Fix**: Replaced the static constant with a dynamic react-evaluated `dynamicStats` array block inside [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js). It dynamically filters the actual `APPLICATIONS` data array, keeping counts fully up-to-date in real-time while preserving the aesthetic zero-padding format (`\\\"04\\\"`, `\\\"01\\\"`) on lower numbers:\\n  - **Total**: The total number of items in the list.\\n  - **Pending**: Applications matching `\\\"Pending\\\"` or `\\\"Shortlist\\\"` status.\\n  - **Accepted**: Applications matching `\\\"Accepted\\\"` status.\\n  - **Rejected**: Applications matching `\\\"Rejected\\\"` status.\\n\\n```javascript\\n  const totalApplications = APPLICATIONS.length;\\n  const pendingApplications = APPLICATIONS.filter(\\n    (a) => a.status === \\\"Pending\\\" || a.status === \\\"Shortlist\\\"\\n  ).length;\\n  const acceptedApplications = APPLICATIONS.filter((a) => a.status === \\\"Accepted\\\").length;\\n  const rejectedApplications = APPLICATIONS.filter((a) => a.status === \\\"Rejected\\\").length;\\n\\n  const formatStatValue = (v\n<truncated 9271 bytes>",
+  "Description": "\"Overwrite walkthrough.md to document the dynamic applications statistics row updates.\"",
+  "IsArtifact": "true",
+  "Overwrite": "true",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Overwriting walkthrough.md with dynamic stats updates\"",
+  "toolSummary": "\"Write walkthrough.md file\""
+}
+
+==================================================
+
+=== STEP 543: multi_replace_file_content ===
+{
+  "Description": "\"Replicated the Quick Hire filter bottom sheet modal styling and layout exactly on the Browse Jobs screen's filter modal. This updates the typography, margins, colors, and dynamic bottom notch padding to match HireProfessional.js exactly.\"",
+  "Instruction": "\"Update filter sheet container and styling definitions in BrowseJobs.js to match HireProfessional.js.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":1400,\"ReplacementContent\":\"          <View style={[styles.sheet, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16 }]}>\",\"StartLine\":1390,\"TargetContent\":\"          <View style={styles.sheet}>\"},{\"AllowMultiple\":false,\"EndLine\":2264,\"ReplacementContent\":\"  sheet: {\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    borderTopLeftRadius: 16,\\n    borderTopRightRadius: 16,\\n    paddingHorizontal: 16,\\n    paddingTop: 16,\\n    maxHeight: Dimensions.get(\\\"window\\\").height * 0.88,\\n  },\\n  sheetTitle: {\\n    fontSize: 18,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#1F1F1F\\\",\\n    marginBottom: 16,\\n  },\\n  sheetSection: {\\n    fontSize: 16,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#1F1F1F\\\",\\n    marginBottom: 12,\\n    marginTop: 8,\\n  },\",\"StartLine\":2239,\"TargetContent\":\"  sheet: {\\n    backgroundColor: \\\"#FFFFFF\\\",\\n    borderTopLeftRadius: 16,\\n    borderTopRightRadius: 16,\\n    paddingHorizontal: 16,\\n    paddingTop: 16,\\n    paddingBottom: 16,\\n    maxHeight: Dimensions.get(\\\"window\\\").height * 0.78,\\n  },\\n  sheetTitle: {\\n    fontSize: 14,\\n    fontFamily: \\\"Poppins_500Medium\\\",\\n    color: \\\"#333333\\\",\\n    marginBottom: 8,\\n  },\\n  sheetSection: {\\n    fontSize: 16,\\n    fontFamily: \\\"Montserrat_600SemiBold\\\",\\n    color: \\\"#666666\\\",\\n    marginBottom: 8,\\n  },\"}]",
+  "TargetFile": "\"c:\\\\Users\\\\aocha\\\\Downloads\\\\Asmita\\\\Chalo_Khelane_App\\\\client\\\\src\\\\screens\\\\player\\\\BrowseJobs.js\"",
+  "toolAction": "\"Replacing styling chunks in BrowseJobs.js\"",
+  "toolSummary": "\"Edit BrowseJobs.js\""
+}
+
+==================================================
+
+=== STEP 547: multi_replace_file_content ===
+{
+  "ArtifactMetadata": "{\"ArtifactType\":\"walkthrough\",\"RequestFeedback\":false,\"Summary\":\"Walkthrough detailing multiple certificate support, dynamic application stats, view profile certificate rendering, success modal enhancements, step 5 review typography, button vertical alignments, and the exact alignment of the Browse Jobs filter popup with the Quick Hire premium layout.\"}",
+  "Description": "\"Updated the walkthrough document to record the exact alignment and replication of the Quick Hire filter bottom sheet modal layout and styles on the Browse Jobs screen.\"",
+  "Instruction": "\"Update walkthrough.md with the filter popup design alignment details.\"",
+  "ReplacementChunks": "[{\"AllowMultiple\":false,\"EndLine\":6,\"ReplacementContent\":\"# Walkthrough: Multiple Certificate Support, Filter Popup Alignment & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during registration, align the Browse Jobs **Filter Popup** design exactly with the premium **Quick Hire Filter Popup**, and implement step 5 review adjustments (typography, spacing, success modal design, full application card clicks, and dynamic application statistics).\",\"StartLine\":1,\"TargetContent\":\"# Walkthrough: Multiple Certificate Support & Step 5 UI Enhancements\\n\\nThis document summarizes the changes made to allow users to select **up to 3 certificates** during the player professional profile registration. The uploaded certificates are displayed side-by-side in a square format with a cross button on top to remove individual certificates. It also details the step 5 review typography, margin spacing adjustments, the success modal design enhancements, screen focus reset fix, full application card click navigation, and dynamic applications statistics.\"},{\"AllowMultiple\":false,\"EndLine\":9,\"ReplacementContent\":\"---\\n\\n## \ud83d\udee0\ufe0f Changes Implemented\\n\\n### 0. Quick Hire Filter Bottom Sheet Modal Alignment\\n- **Issue**: The filter popup on the Browse Jobs screen had styling discrepancies, plain typography, and incorrect margins compared to the premium filter sheet on the \\\"Quick Hire\\\" screen (`HireProfessional.js`).\\n- **Fix**: Replicated the \\\"Quick Hire\\\" sheet styling, spacing, typography, and safe-area adjustments inside [BrowseJobs.js](file:///c:/Users/aocha/Downloads/Asmita/Chalo_Khelane_App/client/src/screens/player/BrowseJobs.js) exactly:\\n  - **Dynamic safe-area bottom padding**: Updated `<View style={styles.sheet}>` to use a dynamic padding array `[styles.sheet, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16 }]` so options are never blocked by system indicators on notched devices.\\n  - **Sheet Title**: Styled `sheetTitle` exactly like the Quick Hi\n<truncated 1375 bytes>",
+  "TargetFile": "\"C:\\\\Users\\\\aocha\\\\.gemini\\\\antigravity-ide\\\\brain\\\\8dec9901-5b97-4d9d-ae10-92bfea9363e4\\\\walkthrough.md\"",
+  "toolAction": "\"Replacing sections in walkthrough.md\"",
+  "toolSummary": "\"Edit walkthrough.md\""
+}
+
+==================================================

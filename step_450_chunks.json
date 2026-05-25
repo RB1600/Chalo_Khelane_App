@@ -1,0 +1,37 @@
+[
+  {
+    "AllowMultiple": false,
+    "EndLine": 1162,
+    "ReplacementContent": "            rating: editProfile?.rating || \"-\",",
+    "StartLine": 1145,
+    "TargetContent": "            rating: editProfile?.rating || \"4.8\","
+  },
+  {
+    "AllowMultiple": false,
+    "EndLine": 1202,
+    "ReplacementContent": "              rating: editProfile?.rating || \"-\",",
+    "StartLine": 1185,
+    "TargetContent": "              rating: editProfile?.rating || \"4.8\","
+  },
+  {
+    "AllowMultiple": false,
+    "EndLine": 1244,
+    "ReplacementContent": "                  rating: editProfile?.rating || \"-\",",
+    "StartLine": 1225,
+    "TargetContent": "                  rating: editProfile?.rating || \"4.8\","
+  },
+  {
+    "AllowMultiple": false,
+    "EndLine": 1314,
+    "ReplacementContent": "                      rating: editProfile?.rating || \"-\",",
+    "StartLine": 1295,
+    "TargetContent": "                      rating: editProfile?.rating || \"4.8\","
+  },
+  {
+    "AllowMultiple": false,
+    "EndLine": 1358,
+    "ReplacementContent": "                      rating: editProfile?.rating || \"-\",",
+    "StartLine": 1340,
+    "TargetContent": "                      rating: editProfile?.rating || \"4.8\","
+  }
+]
